@@ -1,0 +1,27 @@
+{
+  "web": {
+    "http_addr": "127.0.0.1:8080",
+    "cors": true
+  },
+  "databases": {
+    "test_db": {
+      "type": "sqlite3",
+      "url": "./test.sqlite3"
+    }
+  },
+  "scripts": {
+    "init": {
+      "database": "test_db",
+      "path": "init.sql",
+      "anon_exec": true
+    }
+  },
+  "tables":{
+    "test_table": {
+      "database": "test_db",
+      "object": "test_table",
+      "anon_read": true,
+      "anon_write": true
+    }
+  }
+}
