@@ -127,15 +127,15 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 func authorize(methodUpper string, authHeader string, databaseId string, object string) (bool, error) {
 	// if object is not found, return false
-	// if object is found, check if it is anonymous
-	// if object is not anonymous, return true regardless of token
+	// if object is found, check if it is public
+	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
 	if methodUpper == "EXEC" {
 		script := app.Scripts[object]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %v not found", object)
 		}
-		if script.AnonExec {
+		if script.PublicExec {
 			return true, nil
 		}
 	} else {
@@ -143,15 +143,15 @@ func authorize(methodUpper string, authHeader string, databaseId string, object 
 		if table == nil || (table.Database != "" && table.Database != databaseId) {
 			return false, fmt.Errorf("table %v not found", object)
 		}
-		if table.AnonRead && methodUpper == "GET" {
+		if table.PublicRead && methodUpper == "GET" {
 			return true, nil
 		}
-		if table.AnonWrite && (methodUpper == "POST" || methodUpper == "PATCH" || methodUpper == "DELETE") {
+		if table.PublicWrite && (methodUpper == "POST" || methodUpper == "PATCH" || methodUpper == "DELETE") {
 			return true, nil
 		}
 	}
 
-	// object is not anonymous, check token
+	// object is not public, check token
 	// if token doesn't have any access, return false
 	accesses := app.Tokens[authHeader]
 	if accesses == nil || len(*accesses) == 0 {

@@ -13,15 +13,15 @@
     "init": {
       "database": "test_db",
       "path": "init.sql",
-      "anon_exec": true
+      "public_exec": true
     }
   },
   "tables":{
     "test_table": {
       "database": "test_db",
       "object": "test_table",
-      "anon_read": true,
-      "anon_write": true
+      "public_read": true,
+      "public_write": true
     }
   }
 }

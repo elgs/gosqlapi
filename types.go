@@ -72,15 +72,15 @@ type Script struct {
 	Database   string `json:"database"`
 	Text       string `json:"text"`
 	Path       string `json:"path"`
-	AnonExec   bool   `json:"anon_exec"`
+	PublicExec bool   `json:"public_exec"`
 	Statements []*Statement
 }
 
 type Table struct {
-	Database  string `json:"database"`
-	Name      string `json:"name"`
-	AnonRead  bool   `json:"anon_read"`
-	AnonWrite bool   `json:"anon_write"`
+	Database    string `json:"database"`
+	Name        string `json:"name"`
+	PublicRead  bool   `json:"public_read"`
+	PublicWrite bool   `json:"public_write"`
 }
 
 func NewApp(confBytes []byte) (*App, error) {
