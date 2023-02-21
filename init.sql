@@ -13,4 +13,4 @@ insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
 
 
 -- @label: data
-SELECT * FROM test_table;
+SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;

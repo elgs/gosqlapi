@@ -72,7 +72,7 @@ insert INTO test_table (ID, NAME) VALUES (2, 'Beta');
 insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
 
 -- @label: data
-SELECT * FROM test_table;
+SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
 ```
 
 ### On the client side
@@ -80,8 +80,13 @@ SELECT * FROM test_table;
 #### Run a pre-defined script
 
 ```bash
-$ curl -X EXEC 'http://localhost:8080/test_db/init'
-{"data":[{"id":1,"name":"Alpha"},{"id":2,"name":"Beta"},{"id":3,"name":"Gamma"}]}
+$ curl -X EXEC 'http://localhost:8080/test_db/init/' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+  "low": 0,
+  "high": 3
+}'
+{"data":[{"id":1,"name":"Alpha"},{"id":2,"name":"Beta"}]}
 ```
 
 #### Get a recode
