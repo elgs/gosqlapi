@@ -5,7 +5,7 @@ Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, Po
 ## Installation
 
 ```bash
-$ go install github.com/elgs/gosqlapi
+$ go install github.com/elgs/gosqlapi@latest
 ```
 
 ## Usage
