@@ -17,7 +17,7 @@ $ gosqlapi
 or if you don't have `gosqlapi.json` in the current directory:
 
 ```bash
-$ gosqlapi -c gosqlapi.json
+$ gosqlapi -c /path/to/gosqlapi.json
 ```
 
 ## Hello World
@@ -157,6 +157,22 @@ Auth tokens can be configured in `gosqlapi.json`:
         "exec": true
       }
     ]
+  }
+}
+```
+
+## HTTPS
+
+Here is an example of how to configure HTTPS:
+
+```json
+{
+  "web": {
+    "http_addr": "127.0.0.1:8080",
+    "https_addr": "127.0.0.1:8443",
+    "cert_file": "/path/to/cert.pem",
+    "key_file": "/path/to/key.pem",
+    "cors": true
   }
 }
 ```
