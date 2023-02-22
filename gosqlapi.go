@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/elgs/gosqljson"
+	"golang.org/x/exp/slices"
 )
 
 var format = "json"
@@ -130,23 +131,23 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func authorize(methodUpper string, authHeader string, databaseId string, object string) (bool, error) {
+func authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
 	// if object is not found, return false
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
 	if methodUpper == "EXEC" {
-		script := app.Scripts[object]
+		script := app.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
-			return false, fmt.Errorf("script %v not found", object)
+			return false, fmt.Errorf("script %v not found", objectId)
 		}
 		if script.PublicExec {
 			return true, nil
 		}
 	} else {
-		table := app.Tables[object]
+		table := app.Tables[objectId]
 		if table == nil || (table.Database != "" && table.Database != databaseId) {
-			return false, fmt.Errorf("table %v not found", object)
+			return false, fmt.Errorf("table %v not found", objectId)
 		}
 		if table.PublicRead && methodUpper == "GET" {
 			return true, nil
@@ -165,7 +166,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, object 
 
 	// when token has access, check if any access is allowed for database and object
 	for _, access := range *accesses {
-		if access.Database == databaseId && access.Object == object {
+		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
 			switch methodUpper {
 			case "EXEC":
 				if access.Exec {
@@ -182,7 +183,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, object 
 			}
 		}
 	}
-	return false, fmt.Errorf("access token not allowed for database %v and object %v", databaseId, object)
+	return false, fmt.Errorf("access token not allowed for database %v and object %v", databaseId, objectId)
 }
 
 func runTable(method string, database *Database, table *Table, dataId any, params map[string]any) (any, error) {

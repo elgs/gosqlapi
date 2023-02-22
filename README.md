@@ -147,13 +147,13 @@ Auth tokens can be configured in `gosqlapi.json`:
     "401d2fe0a18b26b4ce5f16c76cca6d484707f70a3a804d1c2f5e3fa1971d2fc0": [
       {
         "database": "test_db",
-        "object": "test_table",
+        "objects": ["test_table"],
         "read": true,
         "write": true
       },
       {
         "database": "test_db",
-        "object": "init",
+        "objects": ["init"],
         "exec": true
       }
     ]

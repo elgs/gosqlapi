@@ -51,11 +51,11 @@ func (this *Database) IsPg() bool {
 }
 
 type Access struct {
-	Database string `json:"database"`
-	Object   string `json:"object"`
-	Read     bool   `json:"read"`
-	Write    bool   `json:"write"`
-	Exec     bool   `json:"exec"`
+	Database string   `json:"database"`
+	Objects  []string `json:"objects"`
+	Read     bool     `json:"read"`
+	Write    bool     `json:"write"`
+	Exec     bool     `json:"exec"`
 }
 
 type Statement struct {
