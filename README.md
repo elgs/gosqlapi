@@ -1,6 +1,6 @@
 # gosqlapi
 
-Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, PostgreSQL, and SQLite.
+Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, PostgreSQL, Oracle, Microsoft SQL Server and SQLite.
 
 ## Installation
 
@@ -162,6 +162,83 @@ Auth tokens can be configured in `gosqlapi.json`:
 ```
 
 In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
+
+## Database Configuration
+
+### SQLite3
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "sqlite3",
+      "url": "./test_db.sqlite3"
+    }
+  }
+}
+```
+
+https://github.com/mattn/go-sqlite3
+
+### MySQL and MariaDB
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "mysql",
+      "url": "user:pass@tcp(localhost:3306)/test_db"
+    }
+  }
+}
+```
+
+https://github.com/go-sql-driver/mysql
+
+### PostgreSQL
+
+```json
+{
+  "databases": {
+    "piq": {
+      "type": "pgx",
+      "url": "postgres://user:pass@localhost:5432/test_db"
+    }
+  }
+}
+```
+
+https://github.com/jackc/pgx
+
+### Microsoft SQL Server
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "sqlserver",
+      "url": "sqlserver://user:pass@localhost:1433/test_db?param1=value&param2=value"
+    }
+  }
+}
+```
+
+https://github.com/microsoft/go-mssqldb
+
+### Oracle
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "oracle",
+      "url": "oracle://user:pass@localhost:1521/test_db"
+    }
+  }
+}
+```
+
+https://github.com/sijms/go-ora
 
 ## HTTPS
 
