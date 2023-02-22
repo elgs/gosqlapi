@@ -161,6 +161,8 @@ Auth tokens can be configured in `gosqlapi.json`:
 }
 ```
 
+In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
+
 ## HTTPS
 
 Here is an example of how to configure HTTPS:
@@ -176,8 +178,6 @@ Here is an example of how to configure HTTPS:
   }
 }
 ```
-
-In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
 
 ## License
 
