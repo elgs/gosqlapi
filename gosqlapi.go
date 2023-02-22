@@ -68,22 +68,20 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
 			return
 		}
-		if len(script.Statements) == 0 {
-			script.Text = strings.TrimSpace(script.Text)
-			script.Path = strings.TrimSpace(script.Path)
+		script.Text = strings.TrimSpace(script.Text)
+		script.Path = strings.TrimSpace(script.Path)
+		if script.Text == "" || os.Getenv("env") == "dev" {
 			if script.Text == "" && script.Path == "" {
 				fmt.Fprintf(w, `{"error":"script %v is empty"}`, objectId)
 				return
 			}
 
-			if script.Text == "" {
-				f, err := os.ReadFile(script.Path)
-				if err != nil {
-					fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
-					return
-				}
-				script.Text = string(f)
+			f, err := os.ReadFile(script.Path)
+			if err != nil {
+				fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+				return
 			}
+			script.Text = string(f)
 
 			err = BuildStatements(script, database.IsPg())
 			if err != nil {
