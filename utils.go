@@ -213,6 +213,7 @@ func ExtractSQLParameters(s *string, pgx bool) []string {
 			temp = append(temp, "$"+fmt.Sprint(index+1))
 			lastIndex = match[1]
 		}
+		temp = append(temp, (*s)[lastIndex:])
 		*s = strings.Join(temp, "")
 	} else {
 		*s = r.ReplaceAllString(*s, "?")
@@ -229,6 +230,9 @@ func IsQuery(sql string) bool {
 }
 
 func ShouldExport(sql string) bool {
+	if len(sql) == 0 {
+		return false
+	}
 	if !unicode.IsLetter([]rune(sql)[0]) {
 		return false
 	}
