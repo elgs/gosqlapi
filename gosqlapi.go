@@ -108,7 +108,12 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		if len(urlParts) > 2 {
 			dataId = urlParts[2]
 		}
-		result, err = runTable(methodUpper, database, objectId, dataId, params)
+		table := app.Tables[objectId]
+		if table == nil {
+			fmt.Fprintf(w, `{"error":"table %v not found"}`, objectId)
+			return
+		}
+		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
 			result = map[string]any{
 				"error": err.Error(),
@@ -180,12 +185,12 @@ func authorize(methodUpper string, authHeader string, databaseId string, object 
 	return false, fmt.Errorf("access token not allowed for database %v and object %v", databaseId, object)
 }
 
-func runTable(method string, database *Database, table string, dataId any, params map[string]any) (any, error) {
+func runTable(method string, database *Database, table *Table, dataId any, params map[string]any) (any, error) {
 	db, err := database.Open()
 	if err != nil {
 		return nil, err
 	}
-	sqlSafe(&table)
+	sqlSafe(&table.Name)
 	switch method {
 	case http.MethodGet:
 		if dataId == "" {
@@ -193,9 +198,9 @@ func runTable(method string, database *Database, table string, dataId any, param
 			if err != nil {
 				return nil, err
 			}
-			return gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table, where), values...)
+			return gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table.Name, where), values...)
 		} else {
-			r, err := gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table, database.GetPlaceHolder(0)), dataId)
+			r, err := gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {
 				return nil, err
 			}
@@ -211,15 +216,15 @@ func runTable(method string, database *Database, table string, dataId any, param
 		if err != nil {
 			return nil, err
 		}
-		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %v (%v) VALUES (%v)`, table, keys, qms), values...)
+		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %v (%v) VALUES (%v)`, table.Name, keys, qms), values...)
 	case http.MethodPatch:
 		set, values, err := mapForSqlUpdate(params, database.IsPg())
 		if err != nil {
 			return nil, err
 		}
-		return gosqljson.Exec(db, fmt.Sprintf(`UPDATE %v SET %v WHERE ID=%v`, table, set, database.GetPlaceHolder(len(params))), append(values, dataId)...)
+		return gosqljson.Exec(db, fmt.Sprintf(`UPDATE %v SET %v WHERE ID=%v`, table.Name, set, database.GetPlaceHolder(len(params))), append(values, dataId)...)
 	case http.MethodDelete:
-		return gosqljson.Exec(db, fmt.Sprintf(`DELETE FROM %v WHERE ID=%v`, table, database.GetPlaceHolder(0)), dataId)
+		return gosqljson.Exec(db, fmt.Sprintf(`DELETE FROM %v WHERE ID=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 	}
 	return nil, fmt.Errorf("Method %v not supported.", method)
 }

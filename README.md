@@ -50,7 +50,7 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
   "tables": {
     "test_table": {
       "database": "test_db",
-      "object": "test_table",
+      "name": "test_table",
       "public_read": true,
       "public_write": true
     }
