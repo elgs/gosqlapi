@@ -56,7 +56,7 @@ func SqlNormalize(sql *string) {
 	lines := strings.Split(*sql, "\n")
 	for _, line := range lines {
 		lineTrimmed := strings.TrimSpace(line)
-		if lineTrimmed != "" && !strings.HasPrefix(lineTrimmed, "-- ") {
+		if lineTrimmed != "" && !strings.HasPrefix(lineTrimmed, "--") {
 			ret += line + "\n"
 		}
 	}
@@ -153,6 +153,7 @@ func mapForSqlWhere(m map[string]any, pgx bool) (where string, values []any, err
 }
 
 func BuildStatements(script *Script, pgx bool) error {
+	script.Statements = nil
 	statements, err := gosplitargs.SplitArgs(script.Text, ";", true)
 	if err != nil {
 		return err
@@ -160,7 +161,7 @@ func BuildStatements(script *Script, pgx bool) error {
 
 	for index, statementString := range statements {
 		statementString = strings.TrimSpace(statementString)
-		if len(statementString) == 0 {
+		if statementString == "" {
 			continue
 		}
 		label, statementSQL := SplitSqlLabel(statementString)
@@ -190,9 +191,11 @@ func SplitSqlLabel(sqlString string) (label string, s string) {
 	r := regexp.MustCompile(`(?i)\s*\-\-\s*@label\s*\:\s*(.+)\s*`)
 	m := r.FindStringSubmatch(labelPart)
 	if len(m) >= 2 {
+		SqlNormalize(&sqlPart)
 		return strings.TrimSpace(m[1]), strings.TrimSpace(sqlPart)
 	}
-	return "", sqlString
+	SqlNormalize(&sqlString)
+	return "", strings.TrimSpace(sqlString)
 }
 
 func ExtractSQLParameters(s *string, pgx bool) []string {

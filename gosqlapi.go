@@ -234,7 +234,6 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 		return nil, err
 	}
 	exportedResults := map[string]any{}
-	var result any
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -245,7 +244,6 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 		if len(statement.Text) == 0 {
 			continue
 		}
-		SqlNormalize(&statement.Text)
 
 		// double underscore
 		scriptParams := ExtractScriptParamsFromMap(params)
@@ -253,6 +251,7 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 			statement.Text = strings.ReplaceAll(statement.Text, k, v.(string))
 		}
 
+		var result any
 		sqlParams := []any{}
 		for _, param := range statement.Params {
 			if val, ok := params[param]; ok {
@@ -300,5 +299,11 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 	}
 
 	tx.Commit()
+	if len(exportedResults) == 0 {
+		return nil, nil
+	}
+	if len(exportedResults) == 1 && exportedResults["0"] != nil {
+		return exportedResults["0"], nil
+	}
 	return exportedResults, nil
 }
