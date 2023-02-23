@@ -166,7 +166,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	// if token doesn't have any access, return false
 	accesses := app.Tokens[authHeader]
 	if accesses == nil || len(*accesses) == 0 {
-		return false, fmt.Errorf("access token not found")
+		return false, fmt.Errorf("access denied")
 	}
 
 	// when token has access, check if any access is allowed for database and object
