@@ -68,20 +68,27 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
 			return
 		}
-		script.Text = strings.TrimSpace(script.Text)
+		script.SQL = strings.TrimSpace(script.SQL)
 		script.Path = strings.TrimSpace(script.Path)
-		if script.Text == "" || os.Getenv("env") == "dev" {
-			if script.Text == "" && script.Path == "" {
+
+		if os.Getenv("env") == "dev" {
+			script.built = false
+		}
+
+		if !script.built {
+			if script.SQL == "" && script.Path == "" {
 				fmt.Fprintf(w, `{"error":"script %v is empty"}`, objectId)
 				return
 			}
 
-			f, err := os.ReadFile(script.Path)
-			if err != nil {
-				fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
-				return
+			if script.Path != "" {
+				f, err := os.ReadFile(script.Path)
+				if err != nil {
+					fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+					return
+				}
+				script.SQL = string(f)
 			}
-			script.Text = string(f)
 
 			err = BuildStatements(script, database.IsPg())
 			if err != nil {
@@ -241,14 +248,14 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 	}
 
 	for _, statement := range script.Statements {
-		if len(statement.Text) == 0 {
+		if len(statement.SQL) == 0 {
 			continue
 		}
 
 		// double underscore
 		scriptParams := ExtractScriptParamsFromMap(params)
 		for k, v := range scriptParams {
-			statement.Text = strings.ReplaceAll(statement.Text, k, v.(string))
+			statement.SQL = strings.ReplaceAll(statement.SQL, k, v.(string))
 		}
 
 		var result any
@@ -264,7 +271,7 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 
 		if statement.Query {
 			if format == "array" {
-				header, data, err := gosqljson.QueryToArray(tx, gosqljson.Lower, statement.Text, sqlParams...)
+				header, data, err := gosqljson.QueryToArray(tx, gosqljson.Lower, statement.SQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
@@ -276,7 +283,7 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 					}
 				}
 			} else {
-				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statement.Text, sqlParams...)
+				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statement.SQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
@@ -286,7 +293,7 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 				}
 			}
 		} else {
-			result, err = gosqljson.Exec(tx, statement.Text, sqlParams...)
+			result, err = gosqljson.Exec(tx, statement.SQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err

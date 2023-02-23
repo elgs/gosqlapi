@@ -61,7 +61,7 @@ type Access struct {
 type Statement struct {
 	Index  int
 	Label  string
-	Text   string
+	SQL    string
 	Params []string
 	Query  bool
 	Export bool
@@ -70,10 +70,11 @@ type Statement struct {
 
 type Script struct {
 	Database   string `json:"database"`
-	Text       string `json:"text"`
+	SQL        string `json:"sql"`
 	Path       string `json:"path"`
 	PublicExec bool   `json:"public_exec"`
 	Statements []*Statement
+	built      bool
 }
 
 type Table struct {

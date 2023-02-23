@@ -187,6 +187,35 @@ SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
 3. You can label a statement with `-- @label: label_name`. The `label_name` will be the key of the result in the returned JSON object.
 4. You can use `?param_name?` to define a parameter. The `param_name` will be the key of the parameter in the JSON object sent to the server.
 
+### Inline scripts
+
+You have the option to define a script inline in the `gosqlapi.json` file. This is useful when you want to define a script that is short or you don't want to create a separate file for the script. The script can be defined in the `gosqlapi.json` file as follows:
+
+```json
+{
+  "scripts": {
+    "init": {
+      "database": "test_db",
+      "sql": "drop TABLE IF EXISTS test_table; create TABLE IF NOT EXISTS test_table( ID INTEGER NOT NULL PRIMARY KEY, NAME TEXT ); insert INTO test_table (ID, NAME) VALUES (1, 'Alpha'); insert INTO test_table (ID, NAME) VALUES (2, 'Beta'); insert INTO test_table (ID, NAME) VALUES (3, 'Gamma'); -- @label: data \n SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;"
+    }
+  }
+}
+```
+
+When both `sql` and `path` are defined, `path` will be used, and `sql` will be ignored.
+
+### Edit scripts in dev mode
+
+When the server is running in dev mode, the server will not cache the scripts and will reload the scripts every time a request is made. This is useful when you are editing the scripts so that you don't have to restart the server every time you make a change. To run the server in dev mode, set the `env` environment variable to `dev` when starting the server:
+
+```bash
+$ env=dev gosqlapi
+```
+
+`dev` mode is only effective for scripts defined in `gosqlapi.json` by `path`. For scripts defined in `gosqlapi.json` by `sql`, `dev` mode will not be effective.
+
+Do not use dev mode in production, as it will read the scripts from the disk every time a request is made.
+
 ## Database Configuration
 
 ### SQLite3
