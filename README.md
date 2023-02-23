@@ -8,6 +8,33 @@ Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, Po
 $ go install github.com/elgs/gosqlapi@latest
 ```
 
+If you run into any CGO related compilation issues because of `github.com/mattn/go-sqlite3` sqlite3 driver, you can try to install `gosqlapi` with the following command:
+
+```bash
+$ CGO_ENABLED=0 go install github.com/elgs/gosqlapi@latest
+```
+
+or on Windows:
+
+```powershell
+> cmd /C "set CGO_ENABLED=0&& go install github.com/elgs/gosqlapi@latest"
+```
+
+Please note that there must be no space between `CGO_ENABLED=0` and `&&`.
+
+In this case, you will have to set database `type` as `sqlite` instead of `sqlite3` in `gosqlapi.json`:
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "sqlite",
+      "url": "./test.sqlite3"
+    }
+  }
+}
+```
+
 ## Usage
 
 ```bash
