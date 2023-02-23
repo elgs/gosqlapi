@@ -104,7 +104,7 @@ SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
 
 ### On the client side
 
-#### Run a pre-defined script
+#### Run a pre-defined SQL query
 
 ```bash
 $ curl -X EXEC 'http://localhost:8080/test_db/init/' \
@@ -116,14 +116,14 @@ $ curl -X EXEC 'http://localhost:8080/test_db/init/' \
 {"data":[{"id":1,"name":"Alpha"},{"id":2,"name":"Beta"}]}
 ```
 
-#### Get a recode
+#### Get a record
 
 ```bash
 $ curl -X GET 'http://localhost:8080/test_db/test_table/1'
 {"id":1,"name":"Alpha"}
 ```
 
-#### Create a new recode
+#### Create a new record
 
 ```bash
 $ curl -X POST 'http://localhost:8080/test_db/test_table' \
@@ -135,7 +135,7 @@ $ curl -X POST 'http://localhost:8080/test_db/test_table' \
 {"last_insert_id":4,"rows_affected":1}
 ```
 
-#### Update a recode
+#### Update a record
 
 ```bash
 $ curl -X PATCH 'http://localhost:8080/test_db/test_table/4' \
@@ -146,14 +146,14 @@ $ curl -X PATCH 'http://localhost:8080/test_db/test_table/4' \
 {"last_insert_id":4,"rows_affected":1}
 ```
 
-#### Delete a recode
+#### Delete a record
 
 ```bash
 $ curl -X DELETE 'http://localhost:8080/test_db/test_table/4'
 {"last_insert_id":4,"rows_affected":1}
 ```
 
-#### Search for recodes
+#### Search for records
 
 ```bash
 $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
@@ -190,9 +190,9 @@ Auth tokens can be configured in `gosqlapi.json`:
 
 In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
 
-## Pre-defined Scripts
+## Pre-defined SQL Queries
 
-There are a few things to note when defining a pre-defined script:
+There are a few things to note when defining a pre-defined SQL query in a script:
 
 ```sql
 drop TABLE IF EXISTS test_table;
