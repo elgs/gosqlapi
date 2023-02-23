@@ -280,6 +280,52 @@ Here is an example of how to configure HTTPS:
 }
 ```
 
+## Auto start with systemd
+
+Create service unit file `/etc/systemd/system/gosqlapi.service` with the following content:
+
+```
+[Unit]
+After=network.target
+
+[Service]
+WorkingDirectory=/home/elgs/gosqlapi/
+ExecStart=/home/elgs/go/bin/gosqlapi -c /home/elgs/gosqlapi/gosqlapi.json
+
+[Install]
+WantedBy=default.target
+```
+
+Enable the service:
+
+```
+$ sudo systemctl enable gosqlapi
+```
+
+Remove the service:
+
+```
+$ sudo systemctl disable gosqlapi
+```
+
+Start the service
+
+```
+$ sudo systemctl start gosqlapi
+```
+
+Stop the service
+
+```
+$ sudo systemctl stop gosqlapi
+```
+
+Check service status
+
+```sh
+$ sudo systemctl status gosqlapi
+```
+
 ## License
 
 MIT License
