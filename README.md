@@ -22,7 +22,7 @@ or on Windows:
 
 Please note that there must be no space between `CGO_ENABLED=0` and `&&`.
 
-In this case, you will have to set database `type` as `sqlite` instead of `sqlite3` in `gosqlapi.json`:
+In this case, you will have to set database `type` as `sqlite` instead of `sqlite3` when you use SQLite3 database. For example:
 
 ```json
 {
