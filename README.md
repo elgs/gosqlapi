@@ -184,8 +184,8 @@ SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
 
 1. You can define multiple SQL statements in a single script. The statements will be executed in the order they appear in the script. The script will be executed in a transaction. If any statement fails, the transaction will be rolled back, and if all statements succeed, the transaction will be committed. Statements in the script are separated by `;`.
 2. The results of the statements that start with an uppercase letter will be returned to the client. The results of the statements that start with a lowercase letter will not be returned to the client.
-3. You can label a statement with `-- @label: <label_name>`. The `label_name` will be the key of the result in the returned JSON object.
-4. You can use `?<param_name>?` to define a parameter. The `param_name` will be the key of the parameter in the JSON object sent to the server.
+3. You can label a statement with `-- @label: label_name`. The `label_name` will be the key of the result in the returned JSON object.
+4. You can use `?param_name?` to define a parameter. The `param_name` will be the key of the parameter in the JSON object sent to the server.
 
 ## Database Configuration
 
