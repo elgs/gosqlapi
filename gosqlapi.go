@@ -14,6 +14,7 @@ import (
 )
 
 var format = "json"
+var version = "1"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
@@ -27,6 +28,8 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Allow", "GET,POST,PATCH,DELETE,OPTIONS")
 		return
 	}
+
+	w.Header().Set("gosqlapi-server-version", version)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
