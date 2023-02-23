@@ -204,6 +204,21 @@ SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
 
 https://github.com/mattn/go-sqlite3
 
+or
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "sqlite",
+      "url": "./test_db.sqlite3"
+    }
+  }
+}
+```
+
+https://pkg.go.dev/modernc.org/sqlite
+
 ### MySQL and MariaDB
 
 ```json
