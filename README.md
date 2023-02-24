@@ -243,6 +243,25 @@ $ env=dev gosqlapi
 
 Do not use dev mode in production, as it will read the scripts from the disk every time a request is made.
 
+## Request Metadata in Pre-defined SQL Queries
+
+You can access the request metadata in pre-defined SQL queries. The request metadata includes the request method, the request path, the request query string, and the request headers. The request metadata can be accessed in the pre-defined SQL queries as follows:
+
+```sql
+SELECT
+!remote_addr! as REMOTE_ADDRESS,
+!host! as HOST,
+!method! as METHOD,
+!path! as PATH,
+!query! as QUERY,
+!user_agent! as USER_AGENT,
+!referer! as REFERER,
+!accept! as ACCEPT,
+!AUThorization! as AUTHORIZATION;
+```
+
+The request metadata parameters are case-insensitive. The request metadata parameters are surrounded by `!` characters.
+
 ## Database Configuration
 
 ### SQLite3

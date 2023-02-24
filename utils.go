@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
@@ -160,12 +161,16 @@ func BuildStatements(script *Script, pgx bool) error {
 		return err
 	}
 
-	for index, statementString := range statements {
+	index := 0
+	for _, statementString := range statements {
 		statementString = strings.TrimSpace(statementString)
 		if statementString == "" {
 			continue
 		}
 		label, statementSQL := SplitSqlLabel(statementString)
+		if statementSQL == "" {
+			continue
+		}
 		if label == "" {
 			label = fmt.Sprint(index)
 		}
@@ -180,6 +185,7 @@ func BuildStatements(script *Script, pgx bool) error {
 			Export: ShouldExport(statementSQL),
 		}
 		script.Statements = append(script.Statements, statement)
+		index++
 	}
 	script.built = true
 	return nil
@@ -226,6 +232,18 @@ func ExtractSQLParameters(s *string, pgx bool) []string {
 	return params
 }
 
+func ReplaceRequestParameters(s *string, r *http.Request) {
+	regex := regexp.MustCompile(`\!(.+?)\!`)
+	m := regex.FindAllStringSubmatch(*s, -1)
+	for _, v := range m {
+		if len(v) >= 2 {
+			replacement := GetMetaDataFromRequest(v[1], r)
+			sqlSafe(&replacement)
+			*s = strings.ReplaceAll(*s, v[0], fmt.Sprintf("'%s'", replacement))
+		}
+	}
+}
+
 func IsQuery(sql string) bool {
 	sqlUpper := strings.ToUpper(strings.TrimSpace(sql))
 	return strings.HasPrefix(sqlUpper, "SELECT") ||
@@ -242,4 +260,30 @@ func ShouldExport(sql string) bool {
 		return false
 	}
 	return strings.ToUpper(sql[0:1]) == sql[0:1]
+}
+
+func ExtractIPAddressFromHost(host string) string {
+	sepIndex := strings.LastIndex(host, ":")
+	ip := host[0:sepIndex]
+	ip = strings.ReplaceAll(strings.ReplaceAll(ip, "[", ""), "]", "")
+	return ip
+}
+
+func GetMetaDataFromRequest(key string, r *http.Request) string {
+	if key == "host" {
+		return r.Host
+	} else if key == "remote_addr" {
+		return ExtractIPAddressFromHost(r.RemoteAddr)
+	} else if key == "method" {
+		return r.Method
+	} else if key == "path" {
+		return r.URL.Path
+	} else if key == "query" {
+		return r.URL.RawQuery
+	} else if key == "user_agent" {
+		return r.UserAgent()
+	} else if key == "referer" {
+		return r.Referer()
+	}
+	return r.Header.Get(key)
 }

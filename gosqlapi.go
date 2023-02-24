@@ -14,7 +14,7 @@ import (
 )
 
 var format = "json"
-var version = "3"
+var version = "4"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
@@ -101,12 +101,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			app.Scripts[objectId] = script
 		}
 
-		sepIndex := strings.LastIndex(r.RemoteAddr, ":")
-		clientIP := r.RemoteAddr[0:sepIndex]
-		clientIP = strings.ReplaceAll(strings.ReplaceAll(clientIP, "[", ""), "]", "")
-		params["__client_ip"] = clientIP
-
-		result, err = runExec(database, script, params)
+		result, err = runExec(database, script, params, r)
 		if err != nil {
 			result = map[string]any{
 				"error": err.Error(),
@@ -131,12 +126,12 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonData, err := json.Marshal(result)
-	jsonString := string(jsonData)
-	fmt.Fprintln(w, jsonString)
-
 	if err != nil {
 		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+		return
 	}
+	jsonString := string(jsonData)
+	fmt.Fprintln(w, jsonString)
 }
 
 func authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
@@ -238,7 +233,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 	return nil, fmt.Errorf("Method %v not supported.", method)
 }
 
-func runExec(database *Database, script *Script, params map[string]any) (any, error) {
+func runExec(database *Database, script *Script, params map[string]any, r *http.Request) (any, error) {
 	db, err := database.Open()
 	if err != nil {
 		return nil, err
@@ -255,11 +250,7 @@ func runExec(database *Database, script *Script, params map[string]any) (any, er
 			continue
 		}
 
-		// double underscore
-		scriptParams := ExtractScriptParamsFromMap(params)
-		for k, v := range scriptParams {
-			statement.SQL = strings.ReplaceAll(statement.SQL, k, v.(string))
-		}
+		ReplaceRequestParameters(&statement.SQL, r)
 
 		var result any
 		sqlParams := []any{}
