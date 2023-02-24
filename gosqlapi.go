@@ -25,7 +25,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "OPTIONS" {
-		w.Header().Set("Allow", "GET,POST,PATCH,DELETE,OPTIONS")
+		w.Header().Set("Allow", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		return
 	}
 
@@ -65,7 +65,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	var result any
 
-	if methodUpper == "EXEC" {
+	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil {
 			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
@@ -144,12 +144,12 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
-	if methodUpper == "EXEC" {
+	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %v not found", objectId)
 		}
-		if script.PublicExec {
+		if script.Public {
 			return true, nil
 		}
 	} else {
@@ -157,10 +157,10 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		if table == nil || (table.Database != "" && table.Database != databaseId) {
 			return false, fmt.Errorf("table %v not found", objectId)
 		}
-		if table.PublicRead && methodUpper == "GET" {
+		if table.PublicRead && methodUpper == http.MethodGet {
 			return true, nil
 		}
-		if table.PublicWrite && (methodUpper == "POST" || methodUpper == "PATCH" || methodUpper == "DELETE") {
+		if table.PublicWrite && (methodUpper == http.MethodPost || methodUpper == http.MethodPut || methodUpper == http.MethodDelete) {
 			return true, nil
 		}
 	}
@@ -176,7 +176,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	for _, access := range *accesses {
 		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
 			switch methodUpper {
-			case "EXEC":
+			case "EXEC", http.MethodPatch:
 				if access.Exec {
 					return true, nil
 				}
@@ -184,7 +184,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 				if access.Read {
 					return true, nil
 				}
-			case http.MethodPost, http.MethodPatch, http.MethodDelete:
+			case http.MethodPost, http.MethodPut, http.MethodDelete:
 				if access.Write {
 					return true, nil
 				}
@@ -226,7 +226,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			return nil, err
 		}
 		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %v (%v) VALUES (%v)`, table.Name, keys, qms), values...)
-	case http.MethodPatch:
+	case http.MethodPut:
 		set, values, err := mapForSqlUpdate(params, database.IsPg())
 		if err != nil {
 			return nil, err

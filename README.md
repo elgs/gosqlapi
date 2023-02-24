@@ -71,7 +71,7 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
     "init": {
       "database": "test_db",
       "path": "init.sql",
-      "public_exec": true
+      "public": true
     }
   },
   "tables": {
@@ -107,7 +107,7 @@ SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
 #### Run a pre-defined SQL query
 
 ```bash
-$ curl -X EXEC 'http://localhost:8080/test_db/init/' \
+$ curl -X PATCH 'http://localhost:8080/test_db/init/' \
   --header 'Content-Type: application/json' \
   --data-raw '{
   "low": 0,
@@ -138,7 +138,7 @@ $ curl -X POST 'http://localhost:8080/test_db/test_table' \
 #### Update a record
 
 ```bash
-$ curl -X PATCH 'http://localhost:8080/test_db/test_table/4' \
+$ curl -X PUT 'http://localhost:8080/test_db/test_table/4' \
   --header 'Content-Type: application/json' \
   --data-raw '{
   "name": "Omega"
@@ -162,7 +162,7 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 
 ## Access Control
 
-When a script has `public_exec` set to true, it can be executed by public users. When a table has `public_read` set to true, it can be read by public users. When a table has `public_write` set to true, it can be written by public users.
+When a script has `public` set to true, it can be executed by public users. When a table has `public_read` set to true, it can be read by public users. When a table has `public_write` set to true, it can be written by public users.
 
 When a script or table is set to not be accessible by public users, an auth token is required to access the script or table. The client should send the auth token back to the server in the `Authorization` header. The server will verify the auth token and return an error if the auth token is invalid.
 
