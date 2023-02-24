@@ -63,3 +63,6 @@ func main() {
 
 	Hook(nil)
 }
+
+// Check if anything uses cgo
+// go list -f "{{if .CgoFiles}}{{.ImportPath}}{{end}}" $(go list -f "{{.ImportPath}}{{range .Deps}} {{.}}{{end}}")
