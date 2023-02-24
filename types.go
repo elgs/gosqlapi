@@ -72,7 +72,7 @@ type Script struct {
 	Database   string `json:"database"`
 	SQL        string `json:"sql"`
 	Path       string `json:"path"`
-	Public     bool   `json:"public"`
+	PublicExec bool   `json:"public_exec"`
 	Statements []*Statement
 	built      bool
 }

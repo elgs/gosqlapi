@@ -144,7 +144,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %v not found", objectId)
 		}
-		if script.Public {
+		if script.PublicExec {
 			return true, nil
 		}
 	} else {
