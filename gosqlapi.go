@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,7 +17,6 @@ var format = "json"
 var version = "4"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method)
 	if app.Web.Cors {
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -248,11 +246,12 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 	}
 
 	for _, statement := range script.Statements {
-		if len(statement.SQL) == 0 {
+		if statement.SQL == "" {
 			continue
 		}
+		statementSQL := statement.SQL
 
-		ReplaceRequestParameters(&statement.SQL, r)
+		ReplaceRequestParameters(&statementSQL, r)
 
 		var result any
 		sqlParams := []any{}
@@ -267,7 +266,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 
 		if statement.Query {
 			if format == "array" {
-				header, data, err := gosqljson.QueryToArray(tx, gosqljson.Lower, statement.SQL, sqlParams...)
+				header, data, err := gosqljson.QueryToArray(tx, gosqljson.Lower, statementSQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
@@ -279,7 +278,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 					}
 				}
 			} else {
-				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statement.SQL, sqlParams...)
+				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statementSQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
@@ -289,7 +288,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 				}
 			}
 		} else {
-			result, err = gosqljson.Exec(tx, statement.SQL, sqlParams...)
+			result, err = gosqljson.Exec(tx, statementSQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err
@@ -305,8 +304,10 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 	if len(exportedResults) == 0 {
 		return nil, nil
 	}
-	if len(exportedResults) == 1 && exportedResults["0"] != nil {
-		return exportedResults["0"], nil
+	if len(exportedResults) == 1 {
+		for _, v := range exportedResults {
+			return v, nil
+		}
 	}
 	return exportedResults, nil
 }
