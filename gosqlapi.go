@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,6 +18,7 @@ var format = "json"
 var version = "4"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method)
 	if app.Web.Cors {
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
