@@ -9,9 +9,9 @@ require (
 	github.com/jackc/pgx/v5 v5.3.0
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/microsoft/go-mssqldb v0.20.0
-	github.com/sijms/go-ora/v2 v2.5.31
-	golang.org/x/exp v0.0.0-20230223210539-50820d90acfd
-	modernc.org/sqlite v1.20.4
+	github.com/sijms/go-ora/v2 v2.5.32
+	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
+	modernc.org/sqlite v1.21.0
 )
 
 require (
