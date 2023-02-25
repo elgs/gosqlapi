@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -238,6 +239,7 @@ func ReplaceRequestParameters(s *string, r *http.Request) {
 	for _, v := range m {
 		if len(v) >= 2 {
 			replacement := GetMetaDataFromRequest(v[1], r)
+			log.Println(replacement)
 			sqlSafe(&replacement)
 			*s = strings.ReplaceAll(*s, v[0], fmt.Sprintf("'%s'", replacement))
 		}
@@ -275,6 +277,7 @@ func GetMetaDataFromRequest(key string, r *http.Request) string {
 	} else if key == "remote_addr" {
 		return ExtractIPAddressFromHost(r.RemoteAddr)
 	} else if key == "method" {
+		log.Println(r.Method)
 		return r.Method
 	} else if key == "path" {
 		return r.URL.Path
