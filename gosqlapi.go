@@ -37,7 +37,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	databaseId := urlParts[0]
 	database := app.Databases[databaseId]
 	if database == nil {
-		fmt.Fprintf(w, `{"error":"database %v not found"}\n`, urlParts[0])
+		fmt.Fprintf(w, `{"error":"database %v not found"}`, urlParts[0])
 		return
 	}
 	objectId := urlParts[1]
@@ -48,7 +48,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	authorized, err := authorize(methodUpper, authHeader, databaseId, objectId)
 	if !authorized {
-		fmt.Fprintf(w, `{"error":"%v"}\n`, err.Error())
+		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 		return
 	}
 
@@ -68,7 +68,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil {
-			fmt.Fprintf(w, `{"error":"script %v not found"}\n`, objectId)
+			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
 			return
 		}
 		script.SQL = strings.TrimSpace(script.SQL)
@@ -80,14 +80,14 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
-				fmt.Fprintf(w, `{"error":"script %v is empty"}\n`, objectId)
+				fmt.Fprintf(w, `{"error":"script %v is empty"}`, objectId)
 				return
 			}
 
 			if script.Path != "" {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
-					fmt.Fprintf(w, `{"error":"%v"}\n`, err.Error())
+					fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 					return
 				}
 				script.SQL = string(f)
@@ -95,7 +95,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = BuildStatements(script, database.IsPg())
 			if err != nil {
-				fmt.Fprintf(w, `{"error":"%v"}\n`, err.Error())
+				fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 				return
 			}
 			app.Scripts[objectId] = script
@@ -114,7 +114,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		table := app.Tables[objectId]
 		if table == nil {
-			fmt.Fprintf(w, `{"error":"table %v not found"}\n`, objectId)
+			fmt.Fprintf(w, `{"error":"table %v not found"}`, objectId)
 			return
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
@@ -127,7 +127,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
-		fmt.Fprintf(w, `{"error":"%v"}\n`, err.Error())
+		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 		return
 	}
 	jsonString := string(jsonData)
