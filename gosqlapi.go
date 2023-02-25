@@ -14,7 +14,7 @@ import (
 )
 
 var format = "json"
-var version = "4"
+var version = "5"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
