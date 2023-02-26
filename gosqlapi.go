@@ -123,7 +123,11 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 			return
 		}
-		if result == nil || result.(map[string]int64)["rows_affected"] == 0 {
+		if result == nil {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
+			return
+		} else if f, ok := result.(map[string]any)["rows_affected"]; ok && f == 0 {
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
 			return
