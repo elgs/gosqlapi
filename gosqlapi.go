@@ -48,6 +48,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	authorized, err := authorize(methodUpper, authHeader, databaseId, objectId)
 	if !authorized {
+		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 		return
 	}
@@ -119,9 +120,13 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
-			result = map[string]any{
-				"error": err.Error(),
-			}
+			fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+			return
+		}
+		if result == nil || result.(map[string]int64)["rows_affected"] == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
+			return
 		}
 	}
 
@@ -215,7 +220,6 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			}
 		}
 	case http.MethodPost:
-		// should return the id of the new record?
 		qms, keys, values, err := mapForSqlInsert(params, database.IsPg())
 		if err != nil {
 			return nil, err
