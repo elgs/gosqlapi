@@ -66,7 +66,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	var result any
 
-	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
+	if methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil {
 			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
@@ -148,7 +148,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
-	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
+	if methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %v not found", objectId)
@@ -180,7 +180,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	for _, access := range *accesses {
 		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
 			switch methodUpper {
-			case "EXEC", http.MethodPatch:
+			case http.MethodPatch:
 				if access.Exec {
 					return true, nil
 				}
