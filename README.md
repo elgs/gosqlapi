@@ -222,6 +222,8 @@ CREATE TABLE IF NOT EXISTS `tokens` (
 
 Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
 
+When `token_table` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
+
 ## Pre-defined SQL Queries
 
 There are a few things to note when defining a pre-defined SQL query in a script:
