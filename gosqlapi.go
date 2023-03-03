@@ -14,7 +14,7 @@ import (
 )
 
 var format = "json"
-var version = "5"
+var version = "6"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
@@ -66,7 +66,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	var result any
 
-	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
+	if methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil {
 			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
@@ -148,7 +148,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
-	if methodUpper == "EXEC" || methodUpper == http.MethodPatch {
+	if methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %v not found", objectId)
@@ -169,18 +169,49 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		}
 	}
 
+	// managed tokens
+	if app.TokenTable != nil {
+		managedDatabase := app.Databases[app.TokenTable.Database]
+		if managedDatabase == nil {
+			return false, fmt.Errorf("database %v not found", app.TokenTable.Database)
+		}
+		tokenDB, err := managedDatabase.GetConn()
+		if err != nil {
+			return false, err
+		}
+
+		accesses := []Access{}
+		if app.TokenTable.TableName == "" {
+			app.TokenTable.TableName = "tokens"
+		}
+		err = gosqljson.QueryToStruct(tokenDB, &accesses, fmt.Sprintf("SELECT * from %s where TOKEN=?", app.TokenTable.TableName), authHeader)
+		if err != nil {
+			return false, err
+		}
+		for index := range accesses {
+			access := &accesses[index]
+			access.Objects = strings.Fields(access.ObjectsString)
+		}
+		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
+		return hasAccess(methodUpper, &x, databaseId, objectId)
+	}
+
 	// object is not public, check token
 	// if token doesn't have any access, return false
 	accesses := app.Tokens[authHeader]
 	if accesses == nil || len(*accesses) == 0 {
 		return false, fmt.Errorf("access denied")
+	} else {
+		// when token has access, check if any access is allowed for database and object
+		return hasAccess(methodUpper, accesses, databaseId, objectId)
 	}
+}
 
-	// when token has access, check if any access is allowed for database and object
+func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
 	for _, access := range *accesses {
 		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
 			switch methodUpper {
-			case "EXEC", http.MethodPatch:
+			case http.MethodPatch:
 				if access.Exec {
 					return true, nil
 				}
@@ -199,7 +230,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 }
 
 func runTable(method string, database *Database, table *Table, dataId any, params map[string]any) (any, error) {
-	db, err := database.Open()
+	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +273,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 }
 
 func runExec(database *Database, script *Script, params map[string]any, r *http.Request) (any, error) {
-	db, err := database.Open()
+	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
 	}

@@ -287,3 +287,11 @@ func GetMetaDataFromRequest(key string, r *http.Request) string {
 	}
 	return r.Header.Get(key)
 }
+
+func ArrayOfStructsToArrayOfPointersOfStructs[T any](a []T) []*T {
+	b := make([]*T, len(a))
+	for i := range a {
+		b[i] = &a[i]
+	}
+	return b
+}

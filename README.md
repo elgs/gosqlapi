@@ -29,7 +29,7 @@ In this case, you will have to set database `type` as `sqlite` instead of `sqlit
   "databases": {
     "test_db": {
       "type": "sqlite",
-      "url": "./test.sqlite3"
+      "url": ":memory:"
     }
   }
 }
@@ -63,8 +63,8 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
   },
   "databases": {
     "test_db": {
-      "type": "sqlite3",
-      "url": "./test.sqlite3"
+      "type": "sqlite",
+      "url": ":memory:"
     }
   },
   "scripts": {
@@ -166,7 +166,9 @@ When a script has `public_exec` set to true, it can be executed by public users.
 
 When a script or table is set to not be accessible by public users, an auth token is required to access the script or table. The client should send the auth token back to the server in the `Authorization` header. The server will verify the auth token and return an error if the auth token is invalid.
 
-Auth tokens can be configured in `gosqlapi.json`:
+### Simple Tokens
+
+Simple tokens are configured in `gosqlapi.json`:
 
 ```json
 {
@@ -189,6 +191,36 @@ Auth tokens can be configured in `gosqlapi.json`:
 ```
 
 In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
+
+### Managed Tokens
+
+Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `token_table` in `gosqlapi.json`.
+
+```json
+{
+  "token_table": {
+    "database": "test_db",
+    "table_name": "tokens"
+  }
+}
+```
+
+The table that stores managed tokens should have the following schema:
+
+```sql
+CREATE TABLE IF NOT EXISTS `tokens` (
+  `ID` CHAR(36) NOT NULL,
+  `TOKEN` VARCHAR(255) NOT NULL,      -- required, auth token
+  `DATABASE` VARCHAR(255) NOT NULL,   -- required, target database
+  `OBJECTS` TEXT NOT NULL,            -- required, target objects, separated by whitespace
+  `READ` INT NOT NULL DEFAULT 0 ,     -- required, 1: read, 0: no read
+  `WRITE` INT NOT NULL DEFAULT 0 ,    -- required, 1: write, 0: no write
+  `EXEC` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
+  CONSTRAINT `PRIMARY` PRIMARY KEY (`ID`)
+);
+```
+
+Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
 
 ## Pre-defined SQL Queries
 

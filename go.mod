@@ -4,12 +4,12 @@ go 1.20
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8
-	github.com/elgs/gosqljson v0.0.0-20230222024154-80fea5821a65
+	github.com/elgs/gosqljson v0.0.0-20230303081314-5ff84b08dbb9
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/jackc/pgx/v5 v5.3.0
+	github.com/jackc/pgx/v5 v5.3.1
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/microsoft/go-mssqldb v0.20.0
-	github.com/sijms/go-ora/v2 v2.5.32
+	github.com/sijms/go-ora/v2 v2.5.33
 	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
 	modernc.org/sqlite v1.21.0
 )
