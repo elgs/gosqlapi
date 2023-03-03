@@ -194,7 +194,7 @@ In the example above, the auth token is configured to allow the user to read and
 
 ### Managed Tokens
 
-Managed tokens are stored in the database. The table and database that will store managed tokens are configured as the `token_table` in `gosqlapi.json`.
+Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `token_table` in `gosqlapi.json`.
 
 ```json
 {
@@ -204,6 +204,23 @@ Managed tokens are stored in the database. The table and database that will stor
   }
 }
 ```
+
+The table that stores managed tokens should have the following schema:
+
+```sql
+CREATE TABLE IF NOT EXISTS `tokens` (
+  `ID` CHAR(36) NOT NULL,
+  `TOKEN` VARCHAR(255) NOT NULL,      -- required, auth token
+  `DATABASE` VARCHAR(255) NOT NULL,   -- required, target database
+  `OBJECTS` TEXT NOT NULL,            -- required, target objects, separated by whitespace
+  `READ` INT NOT NULL DEFAULT 0 ,     -- required, 1: read, 0: no read
+  `WRITE` INT NOT NULL DEFAULT 0 ,    -- required, 1: write, 0: no write
+  `EXEC` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
+  CONSTRAINT `PRIMARY` PRIMARY KEY (`ID`)
+);
+```
+
+Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
 
 ## Pre-defined SQL Queries
 
