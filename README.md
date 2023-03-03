@@ -29,7 +29,7 @@ In this case, you will have to set database `type` as `sqlite` instead of `sqlit
   "databases": {
     "test_db": {
       "type": "sqlite",
-      "url": "./test.sqlite3"
+      "url": ":memory:"
     }
   }
 }
@@ -166,7 +166,9 @@ When a script has `public_exec` set to true, it can be executed by public users.
 
 When a script or table is set to not be accessible by public users, an auth token is required to access the script or table. The client should send the auth token back to the server in the `Authorization` header. The server will verify the auth token and return an error if the auth token is invalid.
 
-Auth tokens can be configured in `gosqlapi.json`:
+### Simple Tokens
+
+Simple tokens are configured in `gosqlapi.json`:
 
 ```json
 {
@@ -189,6 +191,19 @@ Auth tokens can be configured in `gosqlapi.json`:
 ```
 
 In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
+
+### Managed Tokens
+
+Managed tokens are stored in the database. The table and database that will store managed tokens are configured as the `token_table` in `gosqlapi.json`.
+
+```json
+{
+  "token_table": {
+    "database": "test_db",
+    "table_name": "tokens"
+  }
+}
+```
 
 ## Pre-defined SQL Queries
 

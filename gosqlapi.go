@@ -170,22 +170,30 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	}
 
 	// managed tokens
-	if authHeader == "managed" {
-		accesses := app.Tokens["managed"]
-		if accesses == nil || len(*accesses) == 0 {
-			return false, fmt.Errorf("access denied")
-		}
-		managed := (*accesses)[0]
-		managedDatabase := app.Databases[managed.Database]
+	if app.TokenTable != nil {
+		managedDatabase := app.Databases[app.TokenTable.Database]
 		if managedDatabase == nil {
-			return false, fmt.Errorf("database %v not found", managed.Database)
+			return false, fmt.Errorf("database %v not found", app.TokenTable.Database)
 		}
 		tokenDB, err := managedDatabase.GetConn()
 		if err != nil {
 			return false, err
 		}
-		gosqljson.QueryToMap(tokenDB, gosqljson.Lower, "select * from tokens where TOKEN=?", authHeader)
 
+		accesses := []Access{}
+		if app.TokenTable.TableName == "" {
+			app.TokenTable.TableName = "tokens"
+		}
+		err = gosqljson.QueryToStruct(tokenDB, &accesses, fmt.Sprintf("SELECT * from %s where TOKEN=?", app.TokenTable.TableName), authHeader)
+		if err != nil {
+			return false, err
+		}
+		for index := range accesses {
+			access := &accesses[index]
+			access.Objects = strings.Fields(access.ObjectsString)
+		}
+		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
+		return hasAccess(methodUpper, &x, databaseId, objectId)
 	}
 
 	// object is not public, check token
@@ -193,9 +201,13 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	accesses := app.Tokens[authHeader]
 	if accesses == nil || len(*accesses) == 0 {
 		return false, fmt.Errorf("access denied")
+	} else {
+		// when token has access, check if any access is allowed for database and object
+		return hasAccess(methodUpper, accesses, databaseId, objectId)
 	}
+}
 
-	// when token has access, check if any access is allowed for database and object
+func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
 	for _, access := range *accesses {
 		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
 			switch methodUpper {

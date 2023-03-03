@@ -7,12 +7,13 @@ import (
 )
 
 type App struct {
-	Web       *Web                 `json:"web"`
-	Databases map[string]*Database `json:"databases"`
-	Scripts   map[string]*Script   `json:"scripts"`
-	Tables    map[string]*Table    `json:"tables"`
-	Tokens    map[string]*[]Access `json:"tokens"`
-	Opt       map[string]any       `json:"opt"`
+	Web        *Web                  `json:"web"`
+	Databases  map[string]*Database  `json:"databases"`
+	Scripts    map[string]*Script    `json:"scripts"`
+	Tables     map[string]*Table     `json:"tables"`
+	Tokens     map[string]*[]*Access `json:"tokens"`
+	TokenTable *TokenTable           `json:"token_table"`
+	Opt        map[string]any        `json:"opt"`
 }
 
 type Web struct {
@@ -51,11 +52,17 @@ func (this *Database) IsPg() bool {
 }
 
 type Access struct {
-	Database string   `json:"database"`
-	Objects  []string `json:"objects"`
-	Read     bool     `json:"read"`
-	Write    bool     `json:"write"`
-	Exec     bool     `json:"exec"`
+	Database      string   `json:"database" db:"database"`
+	Objects       []string `json:"objects"`
+	ObjectsString string   `db:"objects"`
+	Read          bool     `json:"read" db:"read"`
+	Write         bool     `json:"write" db:"write"`
+	Exec          bool     `json:"exec" db:"exec"`
+}
+
+type TokenTable struct {
+	Database  string `json:"database"`
+	TableName string `json:"table_name"`
 }
 
 type Statement struct {
