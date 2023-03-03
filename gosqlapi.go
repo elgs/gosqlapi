@@ -14,7 +14,7 @@ import (
 )
 
 var format = "json"
-var version = "5"
+var version = "6"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
@@ -169,6 +169,25 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		}
 	}
 
+	// managed tokens
+	if authHeader == "managed" {
+		accesses := app.Tokens["managed"]
+		if accesses == nil || len(*accesses) == 0 {
+			return false, fmt.Errorf("access denied")
+		}
+		managed := (*accesses)[0]
+		managedDatabase := app.Databases[managed.Database]
+		if managedDatabase == nil {
+			return false, fmt.Errorf("database %v not found", managed.Database)
+		}
+		tokenDB, err := managedDatabase.GetConn()
+		if err != nil {
+			return false, err
+		}
+		gosqljson.QueryToMap(tokenDB, gosqljson.Lower, "select * from tokens where TOKEN=?", authHeader)
+
+	}
+
 	// object is not public, check token
 	// if token doesn't have any access, return false
 	accesses := app.Tokens[authHeader]
@@ -199,7 +218,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 }
 
 func runTable(method string, database *Database, table *Table, dataId any, params map[string]any) (any, error) {
-	db, err := database.Open()
+	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +261,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 }
 
 func runExec(database *Database, script *Script, params map[string]any, r *http.Request) (any, error) {
-	db, err := database.Open()
+	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
 	}

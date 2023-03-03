@@ -5,8 +5,8 @@
   },
   "databases": {
     "test_db": {
-      "type": "sqlite3",
-      "url": "./test.sqlite3"
+      "type": "sqlite",
+      "url": ":memory:"
     }
   },
   "scripts": {
@@ -16,7 +16,7 @@
       "public_exec": true
     }
   },
-  "tables":{
+  "tables": {
     "test_table": {
       "database": "test_db",
       "name": "test_table",

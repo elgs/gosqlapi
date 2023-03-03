@@ -63,8 +63,8 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
   },
   "databases": {
     "test_db": {
-      "type": "sqlite3",
-      "url": "./test.sqlite3"
+      "type": "sqlite",
+      "url": ":memory:"
     }
   },
   "scripts": {

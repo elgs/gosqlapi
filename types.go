@@ -29,7 +29,7 @@ type Database struct {
 	Conn *sql.DB
 }
 
-func (this *Database) Open() (*sql.DB, error) {
+func (this *Database) GetConn() (*sql.DB, error) {
 	if this.Conn != nil {
 		return this.Conn, nil
 	}
