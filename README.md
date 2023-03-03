@@ -8,6 +8,8 @@ Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, Po
 $ go install github.com/elgs/gosqlapi@latest
 ```
 
+### If installation fails because of CGO
+
 If you run into any CGO related compilation issues because of `github.com/mattn/go-sqlite3` sqlite3 driver, you can try to install `gosqlapi` with the following command:
 
 ```bash
