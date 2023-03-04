@@ -6,8 +6,29 @@ The intention of `gosqlapi` is not to replace a full-fledged backend server, but
 
 ## Installation
 
+Install `gosqlapi` with one of the following commands, depending on the databases you want to use:
+
 ```bash
-$ go install github.com/elgs/gosqlapi@latest
+# Install gosqlapi for databases
+$ go install github.com/elgs/gosqlapi@all
+
+# Install gosqlapi for MySQL and MariaDB - https://github.com/go-sql-driver/mysql
+$ go install github.com/elgs/gosqlapi@mysql
+
+# Install gosqlapi for PostgreSQL - https://github.com/jackc/pgx
+$ go install github.com/elgs/gosqlapi@pgx
+
+# Install gosqlapi for Oracle - https://github.com/sijms/go-ora
+$ go install github.com/elgs/gosqlapi@oracle
+
+# Install gosqlapi for Microsoft SQL Server - https://github.com/microsoft/go-mssqldb
+$ go install github.com/elgs/gosqlapi@sqlserver
+
+# Install gosqlapi for SQLite3 - https://github.com/mattn/go-sqlite3 (CGO required)
+$ go install github.com/elgs/gosqlapi@sqlite3
+
+# Install gosqlapi for SQLite - https://pkg.go.dev/modernc.org/sqlite
+$ go install github.com/elgs/gosqlapi@sqlite
 ```
 
 ### If installation fails because of CGO
@@ -15,13 +36,13 @@ $ go install github.com/elgs/gosqlapi@latest
 If you run into any CGO related compilation issues because of `github.com/mattn/go-sqlite3` sqlite3 driver, you can try to install `gosqlapi` with the following command:
 
 ```bash
-$ CGO_ENABLED=0 go install github.com/elgs/gosqlapi@latest
+$ CGO_ENABLED=0 go install github.com/elgs/gosqlapi@all
 ```
 
 or on Windows:
 
 ```powershell
-> cmd /C "set CGO_ENABLED=0&& go install github.com/elgs/gosqlapi@latest"
+> cmd /C "set CGO_ENABLED=0&& go install github.com/elgs/gosqlapi@all"
 ```
 
 Please note that there must be no space between `CGO_ENABLED=0` and `&&`.
