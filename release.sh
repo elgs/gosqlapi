@@ -14,7 +14,7 @@ for i in "${branches[@]}"
 do
     git checkout "$i"
     git pull origin "$i"
-    git merge master
+    git merge master --no-edit
     git push origin "$i"
 done
 
