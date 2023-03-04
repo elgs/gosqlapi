@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func init() {
