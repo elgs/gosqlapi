@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	_ "modernc.org/sqlite"
 )
 
 func init() {
