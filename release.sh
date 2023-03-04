@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-declare -a branches=("
-all" 
+declare -a branches=(
+"all"
 "mysql" 
 "pgx"
 "sqlite"
@@ -10,7 +10,7 @@ all"
 "oracle"
 )
 
-for i in "${arr[@]}"
+for i in "${branches[@]}"
 do
     git checkout "$i"
     git pull
