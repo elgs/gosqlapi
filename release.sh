@@ -13,9 +13,9 @@ declare -a branches=(
 for i in "${branches[@]}"
 do
     git checkout "$i"
-    git pull
+    git pull origin "$i"
     git merge master
-    git push
+    git push origin "$i"
 done
 
 git checkout master
