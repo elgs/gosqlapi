@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	_ "github.com/microsoft/go-mssqldb"
 )
 
 func init() {
