@@ -2,6 +2,8 @@
 
 Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, PostgreSQL, Oracle, Microsoft SQL Server and SQLite.
 
+The intention of `gosqlapi` is not to replace a full-fledged backend server, but to provide a quick and easy way to expose an SQL database as a RESTful API without writing any server side code, except for only SQL scripts.
+
 ## Installation
 
 ```bash
