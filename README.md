@@ -29,6 +29,9 @@ $ go install github.com/elgs/gosqlapi@sqlite3
 
 # Install gosqlapi for SQLite - https://pkg.go.dev/modernc.org/sqlite
 $ go install github.com/elgs/gosqlapi@sqlite
+
+# Install gosqlapi for all databases from the latest commit. Things may break.
+$ go install github.com/elgs/gosqlapi@latest
 ```
 
 ### If installation fails because of CGO
