@@ -61,8 +61,14 @@ type Access struct {
 }
 
 type TokenTable struct {
-	Database  string `json:"database"`
-	TableName string `json:"table_name"`
+	Database      string `json:"database"`
+	TableName     string `json:"table_name"`
+	TokenField    string `json:"token_field"`
+	DatabaseField string `json:"database_field"`
+	ObjectsField  string `json:"objects_field"`
+	ReadField     string `json:"read_field"`
+	WriteField    string `json:"write_field"`
+	ExecField     string `json:"exec_field"`
 }
 
 type Statement struct {

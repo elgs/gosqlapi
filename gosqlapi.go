@@ -189,7 +189,40 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		if app.TokenTable.TableName == "" {
 			app.TokenTable.TableName = "tokens"
 		}
-		err = gosqljson.QueryToStruct(tokenDB, &accesses, fmt.Sprintf("SELECT * from %s where TOKEN=?", app.TokenTable.TableName), authHeader)
+		if app.TokenTable.TokenField == "" {
+			app.TokenTable.TokenField = "TOKEN"
+		}
+		if app.TokenTable.DatabaseField == "" {
+			app.TokenTable.DatabaseField = "DATABASE"
+		}
+		if app.TokenTable.ObjectsField == "" {
+			app.TokenTable.ObjectsField = "OBJECTS"
+		}
+		if app.TokenTable.ReadField == "" {
+			app.TokenTable.ReadField = "READ"
+		}
+		if app.TokenTable.WriteField == "" {
+			app.TokenTable.WriteField = "WRITE"
+		}
+		if app.TokenTable.ExecField == "" {
+			app.TokenTable.ExecField = "EXEC"
+		}
+
+		tokenQuery := fmt.Sprintf(`SELECT 
+		%s AS "database",
+		%s AS "objects",
+		%s AS "read",
+		%s AS "write",
+		%s AS "exec"
+		FROM %s WHERE %s=?`,
+			app.TokenTable.DatabaseField,
+			app.TokenTable.ObjectsField,
+			app.TokenTable.ReadField,
+			app.TokenTable.WriteField,
+			app.TokenTable.ExecField,
+			app.TokenTable.TableName,
+			app.TokenTable.TokenField)
+		err = gosqljson.QueryToStruct(tokenDB, &accesses, tokenQuery, authHeader)
 		if err != nil {
 			return false, err
 		}
@@ -323,6 +356,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 				}
 			} else {
 				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statementSQL, sqlParams...)
+				fmt.Printf("result: %v\n", result)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
