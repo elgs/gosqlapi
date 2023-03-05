@@ -6,7 +6,7 @@ require (
 	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8
 	github.com/elgs/gosqljson v0.0.0-20230303222654-16240d07b057
 	github.com/mattn/go-sqlite3 v1.14.16
-	golang.org/x/exp v0.0.0-20230303215020-44a13b063f3e
+	golang.org/x/exp v0.0.0-20230304125523-9ff063c70017
 )
 
 require (
