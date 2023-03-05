@@ -238,6 +238,7 @@ The table that stores managed tokens should have the following schema:
 ```sql
 CREATE TABLE IF NOT EXISTS `tokens` (
   `ID` CHAR(36) NOT NULL,
+  `USER_ID` CHAR(36) NOT NULL,
   `TOKEN` VARCHAR(255) NOT NULL,      -- required, auth token
   `DATABASE` VARCHAR(255) NOT NULL,   -- required, target database
   `OBJECTS` TEXT NOT NULL,            -- required, target objects, separated by whitespace
