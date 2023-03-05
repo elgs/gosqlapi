@@ -144,6 +144,11 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
+
+	if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+		authHeader = strings.TrimSpace(authHeader[7:])
+	}
+
 	// if object is not found, return false
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
