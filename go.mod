@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8
-	github.com/elgs/gosqljson v0.0.0-20230306051259-bbec71eea168
+	github.com/elgs/gosqljson v0.0.0-20230306093906-d67d25418ca9
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/mattn/go-sqlite3 v1.14.16
