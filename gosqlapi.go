@@ -356,7 +356,6 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 				}
 			} else {
 				result, err = gosqljson.QueryToMaps(tx, gosqljson.Lower, statementSQL, sqlParams...)
-				fmt.Printf("result: %v\n", result)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
