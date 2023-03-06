@@ -189,46 +189,46 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		if app.TokenTable.TableName == "" {
 			app.TokenTable.TableName = "tokens"
 		}
-		if app.TokenTable.TokenField == "" {
-			app.TokenTable.TokenField = "TOKEN"
+		if app.TokenTable.Token == "" {
+			app.TokenTable.Token = "TOKEN"
 		}
-		if app.TokenTable.DatabaseField == "" {
-			app.TokenTable.DatabaseField = "DATABASE"
+		if app.TokenTable.TargetDatabase == "" {
+			app.TokenTable.TargetDatabase = "TARGET_DATABASE"
 		}
-		if app.TokenTable.ObjectsField == "" {
-			app.TokenTable.ObjectsField = "OBJECTS"
+		if app.TokenTable.TargetObjects == "" {
+			app.TokenTable.TargetObjects = "TARGET_OBJECTS"
 		}
-		if app.TokenTable.ReadField == "" {
-			app.TokenTable.ReadField = "READ"
+		if app.TokenTable.ReadPrivate == "" {
+			app.TokenTable.ReadPrivate = "READ_PRIVATE"
 		}
-		if app.TokenTable.WriteField == "" {
-			app.TokenTable.WriteField = "WRITE"
+		if app.TokenTable.WritePrivate == "" {
+			app.TokenTable.WritePrivate = "WRITE_PRIVATE"
 		}
-		if app.TokenTable.ExecField == "" {
-			app.TokenTable.ExecField = "EXEC"
+		if app.TokenTable.ExecPrivate == "" {
+			app.TokenTable.ExecPrivate = "EXEC_PRIVATE"
 		}
 
 		tokenQuery := fmt.Sprintf(`SELECT 
-		%s AS "database",
-		%s AS "objects",
-		%s AS "read",
-		%s AS "write",
-		%s AS "exec"
+		%s AS "target_database",
+		%s AS "target_objects",
+		%s AS "read_private",
+		%s AS "write_private",
+		%s AS "exec_private"
 		FROM %s WHERE %s=?`,
-			app.TokenTable.DatabaseField,
-			app.TokenTable.ObjectsField,
-			app.TokenTable.ReadField,
-			app.TokenTable.WriteField,
-			app.TokenTable.ExecField,
+			app.TokenTable.TargetDatabase,
+			app.TokenTable.TargetObjects,
+			app.TokenTable.ReadPrivate,
+			app.TokenTable.WritePrivate,
+			app.TokenTable.ExecPrivate,
 			app.TokenTable.TableName,
-			app.TokenTable.TokenField)
+			app.TokenTable.Token)
 		err = gosqljson.QueryToStructs(tokenDB, &accesses, tokenQuery, authHeader)
 		if err != nil {
 			return false, err
 		}
 		for index := range accesses {
 			access := &accesses[index]
-			access.Objects = strings.Fields(access.ObjectsString)
+			access.TargetObjectArray = strings.Fields(access.TargetObjects)
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
 		return hasAccess(methodUpper, &x, databaseId, objectId)
@@ -247,18 +247,18 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 
 func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
 	for _, access := range *accesses {
-		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
+		if access.TargetDatabase == databaseId && slices.Contains(access.TargetObjectArray, objectId) {
 			switch methodUpper {
 			case http.MethodPatch:
-				if access.Exec {
+				if access.ExecPrivate {
 					return true, nil
 				}
 			case http.MethodGet:
-				if access.Read {
+				if access.ReadPrivate {
 					return true, nil
 				}
 			case http.MethodPost, http.MethodPut, http.MethodDelete:
-				if access.Write {
+				if access.WritePrivate {
 					return true, nil
 				}
 			}

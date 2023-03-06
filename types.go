@@ -52,23 +52,23 @@ func (this *Database) IsPg() bool {
 }
 
 type Access struct {
-	Database      string   `json:"database" db:"database"`
-	Objects       []string `json:"objects"`
-	ObjectsString string   `db:"objects"`
-	Read          bool     `json:"read" db:"read"`
-	Write         bool     `json:"write" db:"write"`
-	Exec          bool     `json:"exec" db:"exec"`
+	TargetDatabase    string   `json:"target_database" db:"target_database"`
+	TargetObjectArray []string `json:"target_objects"`
+	TargetObjects     string   `db:"target_objects"`
+	ReadPrivate       bool     `json:"read_private" db:"read_private"`
+	WritePrivate      bool     `json:"write_private" db:"write_private"`
+	ExecPrivate       bool     `json:"exec_private" db:"exec_private"`
 }
 
 type TokenTable struct {
-	Database      string `json:"database"`
-	TableName     string `json:"table_name"`
-	TokenField    string `json:"token_field"`
-	DatabaseField string `json:"database_field"`
-	ObjectsField  string `json:"objects_field"`
-	ReadField     string `json:"read_field"`
-	WriteField    string `json:"write_field"`
-	ExecField     string `json:"exec_field"`
+	Database       string `json:"database"`
+	TableName      string `json:"table_name"`
+	Token          string `json:"token"`
+	TargetDatabase string `json:"target_database"`
+	TargetObjects  string `json:"target_objects"`
+	ReadPrivate    string `json:"read_private"`
+	WritePrivate   string `json:"write_private"`
+	ExecPrivate    string `json:"exec_private"`
 }
 
 type Statement struct {
