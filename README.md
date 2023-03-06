@@ -203,15 +203,15 @@ Simple tokens are configured in `gosqlapi.json`:
   "tokens": {
     "401d2fe0a18b26b4ce5f16c76cca6d484707f70a3a804d1c2f5e3fa1971d2fc0": [
       {
-        "database": "test_db",
-        "objects": ["test_table"],
-        "read": true,
-        "write": true
+        "target_database": "test_db",
+        "target_objects": ["test_table"],
+        "read_private": true,
+        "write_private": true
       },
       {
-        "database": "test_db",
-        "objects": ["init"],
-        "exec": true
+        "target_database": "test_db",
+        "target_objects": ["init"],
+        "exec_private": true
       }
     ]
   }
@@ -239,12 +239,12 @@ The table that stores managed tokens should have the following schema:
 CREATE TABLE IF NOT EXISTS `tokens` (
   `ID` CHAR(36) NOT NULL,
   `USER_ID` CHAR(36) NOT NULL,
-  `TOKEN` VARCHAR(255) NOT NULL,      -- required, auth token
-  `DATABASE` VARCHAR(255) NOT NULL,   -- required, target database
-  `OBJECTS` TEXT NOT NULL,            -- required, target objects, separated by whitespace
-  `READ` INT NOT NULL DEFAULT 0 ,     -- required, 1: read, 0: no read
-  `WRITE` INT NOT NULL DEFAULT 0 ,    -- required, 1: write, 0: no write
-  `EXEC` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
+  `TOKEN` VARCHAR(255) NOT NULL,              -- required, auth token
+  `TARGET_DATABASE` VARCHAR(255) NOT NULL,    -- required, target database
+  `TARGET_OBJECTS` TEXT NOT NULL,             -- required, target objects, separated by whitespace
+  `READ_PRIVATE` INT NOT NULL DEFAULT 0 ,     -- required, 1: read, 0: no read
+  `WRITE_PRIVATE` INT NOT NULL DEFAULT 0 ,    -- required, 1: write, 0: no write
+  `EXEC_PRIVATE` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
   CONSTRAINT `PRIMARY` PRIMARY KEY (`ID`)
 );
 ```
