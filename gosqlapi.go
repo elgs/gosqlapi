@@ -189,13 +189,46 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		if app.TokenTable.TableName == "" {
 			app.TokenTable.TableName = "tokens"
 		}
-		err = gosqljson.QueryToStruct(tokenDB, &accesses, fmt.Sprintf("SELECT * from %s where TOKEN=?", app.TokenTable.TableName), authHeader)
+		if app.TokenTable.Token == "" {
+			app.TokenTable.Token = "TOKEN"
+		}
+		if app.TokenTable.TargetDatabase == "" {
+			app.TokenTable.TargetDatabase = "TARGET_DATABASE"
+		}
+		if app.TokenTable.TargetObjects == "" {
+			app.TokenTable.TargetObjects = "TARGET_OBJECTS"
+		}
+		if app.TokenTable.ReadPrivate == "" {
+			app.TokenTable.ReadPrivate = "READ_PRIVATE"
+		}
+		if app.TokenTable.WritePrivate == "" {
+			app.TokenTable.WritePrivate = "WRITE_PRIVATE"
+		}
+		if app.TokenTable.ExecPrivate == "" {
+			app.TokenTable.ExecPrivate = "EXEC_PRIVATE"
+		}
+
+		tokenQuery := fmt.Sprintf(`SELECT 
+		%s AS "target_database",
+		%s AS "target_objects",
+		%s AS "read_private",
+		%s AS "write_private",
+		%s AS "exec_private"
+		FROM %s WHERE %s=?`,
+			app.TokenTable.TargetDatabase,
+			app.TokenTable.TargetObjects,
+			app.TokenTable.ReadPrivate,
+			app.TokenTable.WritePrivate,
+			app.TokenTable.ExecPrivate,
+			app.TokenTable.TableName,
+			app.TokenTable.Token)
+		err = gosqljson.QueryToStructs(tokenDB, &accesses, tokenQuery, authHeader)
 		if err != nil {
 			return false, err
 		}
 		for index := range accesses {
 			access := &accesses[index]
-			access.Objects = strings.Fields(access.ObjectsString)
+			access.TargetObjectArray = strings.Fields(access.TargetObjects)
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
 		return hasAccess(methodUpper, &x, databaseId, objectId)
@@ -214,18 +247,18 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 
 func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
 	for _, access := range *accesses {
-		if access.Database == databaseId && slices.Contains(access.Objects, objectId) {
+		if access.TargetDatabase == databaseId && slices.Contains(access.TargetObjectArray, objectId) {
 			switch methodUpper {
 			case http.MethodPatch:
-				if access.Exec {
+				if access.ExecPrivate {
 					return true, nil
 				}
 			case http.MethodGet:
-				if access.Read {
+				if access.ReadPrivate {
 					return true, nil
 				}
 			case http.MethodPost, http.MethodPut, http.MethodDelete:
-				if access.Write {
+				if access.WritePrivate {
 					return true, nil
 				}
 			}
@@ -247,9 +280,9 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			if err != nil {
 				return nil, err
 			}
-			return gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table.Name, where), values...)
+			return gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table.Name, where), values...)
 		} else {
-			r, err := gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
+			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {
 				return nil, err
 			}
@@ -310,7 +343,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 
 		if statement.Query {
 			if format == "array" {
-				header, data, err := gosqljson.QueryToArray(tx, gosqljson.Lower, statementSQL, sqlParams...)
+				header, data, err := gosqljson.QueryToArrays(tx, gosqljson.Lower, statementSQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
@@ -322,7 +355,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 					}
 				}
 			} else {
-				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statementSQL, sqlParams...)
+				result, err = gosqljson.QueryToMaps(tx, gosqljson.Lower, statementSQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
