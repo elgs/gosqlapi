@@ -253,6 +253,25 @@ Please feel free to change the ID to a different type, such as `INT`, or add mor
 
 When `token_table` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
 
+If you already have a table that stores managed tokens, you can map the fields in the `token_table` table as follows:
+
+```json
+{
+  "token_table": {
+    "database": "test_db",
+    "table_name": "tokens",
+    "token": "AUTH_TOKEN",
+    "target_database": "TARGET_DATABASE",
+    "target_objects": "TARGET_OBJECTS",
+    "read_private": "READ_PRIVATE",
+    "write_private": "WRITE_PRIVATE",
+    "exec_private": "EXEC_PRIVATE"
+  }
+}
+```
+
+For example, if your token table has the field `AUTH_TOKEN` instead of `TOKEN`, you can use the configuration above to map the field `AUTH_TOKEN` to `TOKEN`.
+
 ## Pre-defined SQL Queries
 
 There are a few things to note when defining a pre-defined SQL query in a script:
