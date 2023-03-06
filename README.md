@@ -442,8 +442,8 @@ Create service unit file `/etc/systemd/system/gosqlapi.service` with the followi
 After=network.target
 
 [Service]
-WorkingDirectory=/home/elgs/gosqlapi/
-ExecStart=/home/elgs/go/bin/gosqlapi -c /home/elgs/gosqlapi/gosqlapi.json
+WorkingDirectory=/home/user/gosqlapi/
+ExecStart=/home/user/go/bin/gosqlapi -c /home/user/gosqlapi/gosqlapi.json
 
 [Install]
 WantedBy=default.target
