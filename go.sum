@@ -12,8 +12,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8 h1:bD2/rCXwgXJm2vgoSSSCM9IPjVFfEoQFFblzg7HHABI=
 github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8/go.mod h1:o4DgpccPNAQAlPSxo7I4L/LWNh2oyr/BBGSynrLTmZM=
-github.com/elgs/gosqljson v0.0.0-20230303222654-16240d07b057 h1:JXoK3EH6D8StO4t+WL7cnB0Bsj78Tnh0u5vw/JXOQcQ=
-github.com/elgs/gosqljson v0.0.0-20230303222654-16240d07b057/go.mod h1:kqtDpZVnI7l9JQNLgsB+0bgL4lXwX4tVvTbGPCHR0S0=
+github.com/elgs/gosqljson v0.0.0-20230306051259-bbec71eea168 h1:IYVwqrX2nP7bGeB6oPUYYPbq9pf9cUBz8wY/R9PKR2c=
+github.com/elgs/gosqljson v0.0.0-20230306051259-bbec71eea168/go.mod h1:kqtDpZVnI7l9JQNLgsB+0bgL4lXwX4tVvTbGPCHR0S0=
 github.com/golang-jwt/jwt v3.2.1+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-jwt/jwt/v4 v4.2.0/go.mod h1:/xlHOz8bRuivTWchD4jCa+NbatV+wEUSzwAxVc6locg=
