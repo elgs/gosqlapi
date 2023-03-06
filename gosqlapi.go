@@ -222,7 +222,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 			app.TokenTable.ExecField,
 			app.TokenTable.TableName,
 			app.TokenTable.TokenField)
-		err = gosqljson.QueryToStruct(tokenDB, &accesses, tokenQuery, authHeader)
+		err = gosqljson.QueryToStructs(tokenDB, &accesses, tokenQuery, authHeader)
 		if err != nil {
 			return false, err
 		}
@@ -280,9 +280,9 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			if err != nil {
 				return nil, err
 			}
-			return gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table.Name, where), values...)
+			return gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table.Name, where), values...)
 		} else {
-			r, err := gosqljson.QueryToMap(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
+			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {
 				return nil, err
 			}
@@ -343,7 +343,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 
 		if statement.Query {
 			if format == "array" {
-				header, data, err := gosqljson.QueryToArray(tx, gosqljson.Lower, statementSQL, sqlParams...)
+				header, data, err := gosqljson.QueryToArrays(tx, gosqljson.Lower, statementSQL, sqlParams...)
 				if err != nil {
 					tx.Rollback()
 					return nil, err
@@ -355,7 +355,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 					}
 				}
 			} else {
-				result, err = gosqljson.QueryToMap(tx, gosqljson.Lower, statementSQL, sqlParams...)
+				result, err = gosqljson.QueryToMaps(tx, gosqljson.Lower, statementSQL, sqlParams...)
 				fmt.Printf("result: %v\n", result)
 				if err != nil {
 					tx.Rollback()
