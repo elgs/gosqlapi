@@ -7,6 +7,8 @@ github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8 h1:bD2/rCXwgXJm2v
 github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8/go.mod h1:o4DgpccPNAQAlPSxo7I4L/LWNh2oyr/BBGSynrLTmZM=
 github.com/elgs/gosqljson v0.0.0-20230306051259-bbec71eea168 h1:IYVwqrX2nP7bGeB6oPUYYPbq9pf9cUBz8wY/R9PKR2c=
 github.com/elgs/gosqljson v0.0.0-20230306051259-bbec71eea168/go.mod h1:kqtDpZVnI7l9JQNLgsB+0bgL4lXwX4tVvTbGPCHR0S0=
+github.com/elgs/gosqljson v0.0.0-20230306093906-d67d25418ca9 h1:AQk2oh27LW2LKhCITtLUAsh1UHUTBVVwJOwxzjLud3Y=
+github.com/elgs/gosqljson v0.0.0-20230306093906-d67d25418ca9/go.mod h1:kqtDpZVnI7l9JQNLgsB+0bgL4lXwX4tVvTbGPCHR0S0=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 h1:Z9n2FFNUXsshfwJMBgNA0RU6/i7WVaAegv3PtuIHPMs=
 github.com/mattn/go-isatty v0.0.17 h1:BTarxUcIeDqL27Mc+vyvdWYSL28zpIhv3RoTdsLMPng=
