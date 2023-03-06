@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8
-	github.com/elgs/gosqljson v0.0.0-20230306051259-bbec71eea168
+	github.com/elgs/gosqljson v0.0.0-20230306093906-d67d25418ca9
 	github.com/microsoft/go-mssqldb v0.20.0
 	golang.org/x/exp v0.0.0-20230304125523-9ff063c70017
 )
