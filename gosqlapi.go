@@ -14,7 +14,7 @@ import (
 )
 
 var format = "json"
-var version = "7"
+var version = "8"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
@@ -94,7 +94,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 				script.SQL = string(f)
 			}
 
-			err = BuildStatements(script, database.IsPg())
+			err = BuildStatements(script, database.GetPlaceHolder)
 			if err != nil {
 				fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 				return
@@ -127,7 +127,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
 			return
-		} else if f, ok := result.(map[string]any)["rows_affected"]; ok && f == 0 {
+		} else if f, ok := result.(map[string]int64); ok && f["rows_affected"] == 0 {
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
 			return
@@ -276,11 +276,11 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 	switch method {
 	case http.MethodGet:
 		if dataId == "" {
-			where, values, err := mapForSqlWhere(params, database.IsPg())
+			where, values, err := mapForSqlWhere(params, database.GetPlaceHolder)
 			if err != nil {
 				return nil, err
 			}
-			return gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE TRUE %v`, table.Name, where), values...)
+			return gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE 1=1 %v`, table.Name, where), values...)
 		} else {
 			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {
@@ -293,13 +293,13 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			}
 		}
 	case http.MethodPost:
-		qms, keys, values, err := mapForSqlInsert(params, database.IsPg())
+		qms, keys, values, err := mapForSqlInsert(params, database.GetPlaceHolder)
 		if err != nil {
 			return nil, err
 		}
 		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %v (%v) VALUES (%v)`, table.Name, keys, qms), values...)
 	case http.MethodPut:
-		set, values, err := mapForSqlUpdate(params, database.IsPg())
+		set, values, err := mapForSqlUpdate(params, database.GetPlaceHolder)
 		if err != nil {
 			return nil, err
 		}
