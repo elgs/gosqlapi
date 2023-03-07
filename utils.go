@@ -81,20 +81,16 @@ func sqlSafe(s *string) {
 	*s = strings.Replace(*s, "--", "", -1)
 }
 
-func mapForSqlInsert(m map[string]any, pgx bool) (questionMarks string, keys string, values []any, err error) {
+func mapForSqlInsert(m map[string]any, GetPlaceHolder func(index int) string) (placeholders string, keys string, values []any, err error) {
 	length := len(m)
 	if length == 0 {
 		return "", "", nil, fmt.Errorf("Empty parameter map")
 	}
 
-	if pgx {
-		for i := 1; i <= length; i++ {
-			questionMarks += "$" + fmt.Sprint(i) + ","
-		}
-	} else {
-		questionMarks = strings.Repeat("?,", length)
+	for i := 0; i < length; i++ {
+		placeholders += GetPlaceHolder(i) + ","
 	}
-	questionMarks = questionMarks[:len(questionMarks)-1]
+	placeholders = placeholders[:len(placeholders)-1]
 
 	values = make([]any, length)
 	i := 0
@@ -108,7 +104,7 @@ func mapForSqlInsert(m map[string]any, pgx bool) (questionMarks string, keys str
 	return
 }
 
-func mapForSqlUpdate(m map[string]any, pgx bool) (set string, values []any, err error) {
+func mapForSqlUpdate(m map[string]any, GetPlaceHolder func(index int) string) (set string, values []any, err error) {
 	sqlSafe(&set)
 	length := len(m)
 	if length == 0 {
@@ -118,11 +114,7 @@ func mapForSqlUpdate(m map[string]any, pgx bool) (set string, values []any, err 
 	values = make([]any, length)
 	i := 0
 	for k, v := range m {
-		if pgx {
-			set += k + "=$" + fmt.Sprint(i+1) + ","
-		} else {
-			set += k + "=?,"
-		}
+		set += fmt.Sprintf("%s=%s,", k, GetPlaceHolder(i))
 		values[i] = v
 		i++
 	}
@@ -130,7 +122,7 @@ func mapForSqlUpdate(m map[string]any, pgx bool) (set string, values []any, err 
 	return
 }
 
-func mapForSqlWhere(m map[string]any, pgx bool) (where string, values []any, err error) {
+func mapForSqlWhere(m map[string]any, GetPlaceHolder func(index int) string) (where string, values []any, err error) {
 	length := len(m)
 	if length == 0 {
 		return "", nil, fmt.Errorf("Empty parameter map")
@@ -139,12 +131,7 @@ func mapForSqlWhere(m map[string]any, pgx bool) (where string, values []any, err
 	values = make([]any, length)
 	i := 0
 	for k, v := range m {
-		if pgx {
-			where += "AND " + k + "=$" + fmt.Sprint(i+1) + " "
-		} else {
-			where += "AND " + k + "=? "
-
-		}
+		where += fmt.Sprintf("AND %s=%s ", k, GetPlaceHolder(i))
 		values[i] = v
 		i++
 	}
@@ -153,7 +140,7 @@ func mapForSqlWhere(m map[string]any, pgx bool) (where string, values []any, err
 	return
 }
 
-func BuildStatements(script *Script, pgx bool) error {
+func BuildStatements(script *Script, GetPlaceHolder func(index int) string) error {
 	script.Statements = nil
 	script.built = false
 	statements, err := gosplitargs.SplitArgs(script.SQL, ";", true)
@@ -174,7 +161,7 @@ func BuildStatements(script *Script, pgx bool) error {
 		if label == "" {
 			label = fmt.Sprint(index)
 		}
-		params := ExtractSQLParameters(&statementSQL, pgx)
+		params := ExtractSQLParameters(&statementSQL, GetPlaceHolder)
 		statement := &Statement{
 			Index:  index,
 			Label:  label,
@@ -206,7 +193,7 @@ func SplitSqlLabel(sqlString string) (label string, s string) {
 	return "", strings.TrimSpace(sqlString)
 }
 
-func ExtractSQLParameters(s *string, pgx bool) []string {
+func ExtractSQLParameters(s *string, GetPlaceHolder func(index int) string) []string {
 	params := []string{}
 	r := regexp.MustCompile(`\?(.+?)\?`)
 	m := r.FindAllStringSubmatch(*s, -1)
@@ -215,20 +202,16 @@ func ExtractSQLParameters(s *string, pgx bool) []string {
 			params = append(params, v[1])
 		}
 	}
-	if pgx {
-		indexes := r.FindAllStringSubmatchIndex(*s, -1)
-		temp := []string{}
-		lastIndex := 0
-		for index, match := range indexes {
-			temp = append(temp, (*s)[lastIndex:match[0]])
-			temp = append(temp, "$"+fmt.Sprint(index+1))
-			lastIndex = match[1]
-		}
-		temp = append(temp, (*s)[lastIndex:])
-		*s = strings.Join(temp, "")
-	} else {
-		*s = r.ReplaceAllString(*s, "?")
+	indexes := r.FindAllStringSubmatchIndex(*s, -1)
+	temp := []string{}
+	lastIndex := 0
+	for index, match := range indexes {
+		temp = append(temp, (*s)[lastIndex:match[0]])
+		temp = append(temp, GetPlaceHolder(index))
+		lastIndex = match[1]
 	}
+	temp = append(temp, (*s)[lastIndex:])
+	*s = strings.Join(temp, "")
 	return params
 }
 

@@ -40,15 +40,15 @@ func (this *Database) GetConn() (*sql.DB, error) {
 }
 
 func (this *Database) GetPlaceHolder(index int) string {
-	if this.IsPg() {
+	if this.Type == "pgx" {
 		return fmt.Sprintf("$%d", index+1)
+	} else if this.Type == "sqlserver" {
+		return fmt.Sprintf("@p%d", index+1)
+	} else if this.Type == "oracle" {
+		return fmt.Sprintf(":%d", index+1)
 	} else {
 		return "?"
 	}
-}
-
-func (this *Database) IsPg() bool {
-	return this.Type == "pgx"
 }
 
 type Access struct {

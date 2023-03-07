@@ -123,7 +123,7 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
 drop TABLE IF EXISTS test_table;
 create TABLE IF NOT EXISTS test_table(
     ID INTEGER NOT NULL PRIMARY KEY,
-    NAME TEXT
+    NAME VARCHAR(50)
 );
 
 insert INTO test_table (ID, NAME) VALUES (1, 'Alpha');
@@ -417,7 +417,7 @@ https://github.com/jackc/pgx
   "databases": {
     "test_db": {
       "type": "sqlserver",
-      "url": "sqlserver://user:pass@localhost:1433/test_db?param1=value&param2=value"
+      "url": "sqlserver://user:pass@localhost:1433?database=test_db&param1=value&param2=value"
     }
   }
 }
