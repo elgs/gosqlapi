@@ -11,8 +11,10 @@ func TestExtractSQLParameter(t *testing.T) {
 		"  ?var2?":            {"var2"},
 	}
 
+	dbPgx := &Database{Type: "pgx"}
+
 	for k, v := range testCases {
-		got := ExtractSQLParameters(&k, true)
+		got := ExtractSQLParameters(&k, dbPgx.GetPlaceHolder)
 		if len(got) != len(v) {
 			t.Errorf(`%v; wanted "%v", got "%v"`, k, len(v), len(got))
 		}
