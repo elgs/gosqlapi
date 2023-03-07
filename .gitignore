@@ -16,3 +16,4 @@
 
 test.sqlite3
 tmp/
+build/
