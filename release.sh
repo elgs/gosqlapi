@@ -27,7 +27,7 @@ do
     done
     go get -u
     go mod tidy
-    git commit -m "Merge branch 'master' into $branch"
+    git commit -am "Merge branch 'master' into $branch"
     git push origin "$branch"
 done
 
