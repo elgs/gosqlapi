@@ -63,6 +63,10 @@ In this case, you will have to set database `type` as `sqlite` instead of `sqlit
 }
 ```
 
+### Download pre-built binaries
+
+If you don't have Go installed, you can download pre-built binaries from the [releases page](https://goweb.az.ht/gosqlapi/build/).
+
 ## Usage
 
 ```bash
