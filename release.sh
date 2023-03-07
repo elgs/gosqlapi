@@ -13,6 +13,7 @@ declare -a branches=(
 declare -a do_not_merge=(
     "go.mod"
     "go.sum"
+    "drivers.go"
 )
 
 for branch in "${branches[@]}"
