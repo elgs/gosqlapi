@@ -417,7 +417,7 @@ https://github.com/jackc/pgx
   "databases": {
     "test_db": {
       "type": "sqlserver",
-      "url": "sqlserver://user:pass@localhost:1433?database=test_db&param1=value&param2=value"
+      "url": "sqlserver://user:pass@localhost:1433/test_db"
     }
   }
 }
