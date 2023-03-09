@@ -192,6 +192,37 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 [{"id":2,"name":"Beta"}]
 ```
 
+#### Search for records with .limit, .offset and .order_by
+
+```bash
+$ curl -X GET 'http://localhost:8080/test_db/test_table?.limit=2&.offset=1&.order_by=name%20asc%2C%20id%20desc' \
+  --header 'Content-Type: application/json'
+[{"id":2,"name":"Beta"},{"id":3,"name":"Gamma"}]
+```
+
+You can use the following parameters:
+
+- `.limit`: limit the number of records returned
+- `.offset`: offset the number of records returned
+- `.order_by`: order the records returned
+
+You can give a table a default limit and order_by by setting `page_size` and `order_by` in `gosqlapi.json`:
+
+```json
+{
+  "tables": {
+    "test_table": {
+      "database": "test_db",
+      "name": "test_table",
+      "public_read": true,
+      "public_write": true,
+      "page_size": 10, // default limit
+      "order_by": "id desc" // default order_by
+    }
+  }
+}
+```
+
 ## Access Control
 
 When a script has `public_exec` set to true, it can be executed by public users. When a table has `public_read` set to true, it can be read by public users. When a table has `public_write` set to true, it can be written by public users.
