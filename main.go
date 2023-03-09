@@ -14,10 +14,15 @@ func init() {
 }
 
 var app *App
+var version = "9"
 
 func main() {
-
+	v := flag.Bool("v", false, "prints version")
 	confPath := flag.String("c", "gosqlapi.json", "configration file path")
+	if *v {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 	flag.Parse()
 	confBytes, err := os.ReadFile(*confPath)
 	if err != nil {
