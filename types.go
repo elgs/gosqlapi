@@ -7,13 +7,13 @@ import (
 )
 
 type App struct {
-	Web        *Web                  `json:"web"`
-	Databases  map[string]*Database  `json:"databases"`
-	Scripts    map[string]*Script    `json:"scripts"`
-	Tables     map[string]*Table     `json:"tables"`
-	Tokens     map[string]*[]*Access `json:"tokens"`
-	TokenTable *TokenTable           `json:"token_table"`
-	Opt        map[string]any        `json:"opt"`
+	Web             *Web                  `json:"web"`
+	Databases       map[string]*Database  `json:"databases"`
+	Scripts         map[string]*Script    `json:"scripts"`
+	Tables          map[string]*Table     `json:"tables"`
+	Tokens          map[string]*[]*Access `json:"tokens"`
+	TokenTable      *TokenTable           `json:"token_table"`
+	DefaultPageSize int                   `json:"default_page_size"`
 }
 
 type Web struct {
@@ -49,6 +49,16 @@ func (this *Database) GetPlaceHolder(index int) string {
 	} else {
 		return "?"
 	}
+}
+
+func (this *Database) GetLimitClause(limit any, offset any) string {
+	switch this.Type {
+	case "pgx", "mysql", "sqlite3", "sqlite":
+		return fmt.Sprintf("LIMIT %s OFFSET %s", limit, offset)
+	case "sqlserver", "oracle":
+		return fmt.Sprintf("OFFSET %s ROWS FETCH NEXT %s ROWS ONLY", offset, limit)
+	}
+	return ""
 }
 
 type Access struct {
@@ -95,6 +105,8 @@ type Table struct {
 	Name        string `json:"name"`
 	PublicRead  bool   `json:"public_read"`
 	PublicWrite bool   `json:"public_write"`
+	PageSize    int    `json:"page_size"`
+	OrderBy     string `json:"order_by"`
 }
 
 func NewApp(confBytes []byte) (*App, error) {

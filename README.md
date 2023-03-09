@@ -438,6 +438,19 @@ https://github.com/microsoft/go-mssqldb
 }
 ```
 
+### Oracle Cloud TLS
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "oracle",
+      "url": "oracle://user:pass@:0/?SSL VERIFY=FALSE&connStr=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=host))(connect_data=(service_name=service_name))(security=(ssl_server_dn_match=yes)))"
+    }
+  }
+}
+```
+
 https://github.com/sijms/go-ora
 
 ## HTTPS
