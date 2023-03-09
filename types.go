@@ -54,9 +54,9 @@ func (this *Database) GetPlaceHolder(index int) string {
 func (this *Database) GetLimitClause(limit any, offset any) string {
 	switch this.Type {
 	case "pgx", "mysql", "sqlite3", "sqlite":
-		return fmt.Sprintf("LIMIT %s OFFSET %s", limit, offset)
+		return fmt.Sprintf("LIMIT %v OFFSET %v", limit, offset)
 	case "sqlserver", "oracle":
-		return fmt.Sprintf("OFFSET %s ROWS FETCH NEXT %s ROWS ONLY", offset, limit)
+		return fmt.Sprintf("OFFSET %v ROWS FETCH NEXT %v ROWS ONLY", offset, limit)
 	}
 	return ""
 }
