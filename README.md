@@ -216,8 +216,8 @@ You can give a table a default limit and order_by by setting `page_size` and `or
       "name": "test_table",
       "public_read": true,
       "public_write": true,
-      "page_size": 10, // default limit
-      "order_by": "id desc" // default order_by
+      "page_size": 10,
+      "order_by": "name asc, id desc"
     }
   }
 }
