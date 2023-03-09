@@ -14,7 +14,6 @@ import (
 )
 
 var format = "json"
-var version = "8"
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if app.Web.Cors {
@@ -37,6 +36,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	databaseId := urlParts[0]
 	database := app.Databases[databaseId]
 	if database == nil {
+		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintf(w, `{"error":"database %v not found"}`, urlParts[0])
 		return
 	}
@@ -69,6 +69,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil {
+			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
 			return
 		}
@@ -81,6 +82,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
+				w.WriteHeader(http.StatusForbidden)
 				fmt.Fprintf(w, `{"error":"script %v is empty"}`, objectId)
 				return
 			}
@@ -88,6 +90,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			if script.Path != "" {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
+					w.WriteHeader(http.StatusForbidden)
 					fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 					return
 				}
@@ -96,6 +99,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = BuildStatements(script, database.GetPlaceHolder)
 			if err != nil {
+				w.WriteHeader(http.StatusForbidden)
 				fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 				return
 			}
@@ -104,9 +108,9 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		result, err = runExec(database, script, params, r)
 		if err != nil {
-			result = map[string]any{
-				"error": err.Error(),
-			}
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+			return
 		}
 	} else {
 		dataId := ""
@@ -115,11 +119,13 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		table := app.Tables[objectId]
 		if table == nil {
+			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, `{"error":"table %v not found"}`, objectId)
 			return
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 			return
 		}
@@ -136,6 +142,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
 		return
 	}
@@ -272,15 +279,46 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 	if err != nil {
 		return nil, err
 	}
-	sqlSafe(&table.Name)
 	switch method {
 	case http.MethodGet:
 		if dataId == "" {
+			limit := params[".limit"]
+			if limit == nil || limit == "" || limit == "0" || limit == 0 {
+				limit = table.PageSize
+			}
+			if limit == nil || limit == "" || limit == "0" || limit == 0 {
+				limit = app.DefaultPageSize
+			}
+			if limit == nil || limit == "" || limit == "0" || limit == 0 {
+				limit = 100
+			}
+
+			offset := params[".offset"]
+			if offset == nil {
+				offset = 0
+			}
+
+			limitClause := database.GetLimitClause(limit, offset)
+
+			orderBy := params[".order_by"]
+			if orderBy == nil {
+				orderBy = table.OrderBy
+			}
+			orderbyClause := ""
+			if orderBy != nil && orderBy != "" {
+				orderbyClause = fmt.Sprintf("ORDER BY %v", orderBy)
+			}
+
+			sqlSafe(&table.Name)
+			sqlSafe(&limitClause)
+			sqlSafe(&orderbyClause)
+
 			where, values, err := mapForSqlWhere(params, database.GetPlaceHolder)
 			if err != nil {
 				return nil, err
 			}
-			return gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE 1=1 %v`, table.Name, where), values...)
+			q := fmt.Sprintf(`SELECT * FROM %v WHERE 1=1 %v %v %v`, table.Name, where, orderbyClause, limitClause)
+			return gosqljson.QueryToMaps(db, gosqljson.Lower, q, values...)
 		} else {
 			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {
