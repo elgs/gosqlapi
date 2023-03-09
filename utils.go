@@ -125,17 +125,19 @@ func mapForSqlUpdate(m map[string]any, GetPlaceHolder func(index int) string) (s
 func mapForSqlWhere(m map[string]any, GetPlaceHolder func(index int) string) (where string, values []any, err error) {
 	length := len(m)
 	if length == 0 {
-		return "", nil, fmt.Errorf("Empty parameter map")
+		return
 	}
 
-	values = make([]any, length)
 	i := 0
 	for k, v := range m {
+		if strings.HasPrefix(k, ".") {
+			continue
+		}
 		where += fmt.Sprintf("AND %s=%s ", k, GetPlaceHolder(i))
-		values[i] = v
+		values = append(values, v)
 		i++
 	}
-	where = where[:len(where)-1]
+	where = strings.TrimSpace(where)
 	sqlSafe(&where)
 	return
 }
