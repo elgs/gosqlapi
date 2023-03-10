@@ -145,7 +145,7 @@ func mapForSqlWhere(m map[string]any, GetPlaceHolder func(index int) string) (wh
 func BuildStatements(script *Script, GetPlaceHolder func(index int) string) error {
 	script.Statements = nil
 	script.built = false
-	statements, err := gosplitargs.SplitArgs(script.SQL, ";", true)
+	statements, err := gosplitargs.SplitSQL(script.SQL, ";", true)
 	if err != nil {
 		return err
 	}
