@@ -315,15 +315,15 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 	switch method {
 	case http.MethodGet:
 		if dataId == "" {
-			limit := params[".limit"]
-			if limit == nil || limit == "" || limit == "0" || limit == 0 {
-				limit = table.PageSize
+			pageSize := params[".page_size"]
+			if pageSize == nil || pageSize == "" || pageSize == "0" || pageSize == 0 {
+				pageSize = table.PageSize
 			}
-			if limit == nil || limit == "" || limit == "0" || limit == 0 {
-				limit = app.DefaultPageSize
+			if pageSize == nil || pageSize == "" || pageSize == "0" || pageSize == 0 {
+				pageSize = app.DefaultPageSize
 			}
-			if limit == nil || limit == "" || limit == "0" || limit == 0 {
-				limit = 100
+			if pageSize == nil || pageSize == "" || pageSize == "0" || pageSize == 0 {
+				pageSize = 100
 			}
 
 			offset := params[".offset"]
@@ -331,7 +331,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				offset = 0
 			}
 
-			limitClause := database.GetLimitClause(limit, offset)
+			limitClause := database.GetLimitClause(pageSize, offset)
 
 			orderBy := params[".order_by"]
 			if orderBy == nil {
@@ -368,10 +368,10 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			}
 
 			return map[string]interface{}{
-				"count":  count[0]["count"],
-				"limit":  limit,
-				"offset": offset,
-				"data":   data,
+				"count":     count[0]["count"],
+				"page_size": pageSize,
+				"offset":    offset,
+				"data":      data,
 			}, nil
 		} else {
 			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
