@@ -338,14 +338,12 @@ Instead of specifying the `table_name`, you can use a `query` in the config. The
 {
   "managed_tokens": {
     "database": "test_db",
-    "query": "SELECT TARGET_DATABASE AS target_database, TARGET_OBJECTS AS target_objects, READ_PRIVATE AS read_private, WRITE_PRIVATE AS write_private, EXEC_PRIVATE AS exec_private FROM TOKENS WHERE TOKEN=?"
+    "query": "SELECT TARGET_DATABASE AS target_database, TARGET_OBJECTS AS target_objects, READ_PRIVATE AS read_private, WRITE_PRIVATE AS write_private, EXEC_PRIVATE AS exec_private FROM TOKENS WHERE TOKEN=?token?"
   }
 }
 ```
 
-The placeholder will be replaced with the auth token. The question mark `?` used as the placeholder is an example for SQLite, MySQL and MariaDB. For other databases, please refer to the documentation of the database driver. For example, for PostgreSQL, the placeholder should be `$1`. for SQL Server, the placeholder should be `@p1`, and for Oracle, the placeholder should be `:1`.
-
-If the `query` is getting too long, you can use a separate file to store the query.
+The placeholder will be replaced with the auth token. If the `query` is getting too long, you can use a separate file to store the query.
 
 ```json
 {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/elgs/gosplitargs"
 	"github.com/elgs/gosqljson"
 	"golang.org/x/exp/slices"
 )
@@ -170,7 +171,7 @@ func buildTokenQuery() error {
 	%s AS "read_private",
 	%s AS "write_private",
 	%s AS "exec_private"
-	FROM %s WHERE %s=?`,
+	FROM %s WHERE %s=?token?`,
 			app.ManagedTokens.TargetDatabase,
 			app.ManagedTokens.TargetObjects,
 			app.ManagedTokens.ReadPrivate,
@@ -179,7 +180,20 @@ func buildTokenQuery() error {
 			app.ManagedTokens.TableName,
 			app.ManagedTokens.Token)
 	}
-	sqlSafe(&app.ManagedTokens.Query)
+	tokenDb := app.Databases[app.ManagedTokens.Database]
+	if tokenDb == nil {
+		return fmt.Errorf("database %v not found", app.ManagedTokens.Database)
+	}
+	placeholder := tokenDb.GetPlaceHolder(0)
+	app.ManagedTokens.Query = strings.ReplaceAll(app.ManagedTokens.Query, "?token?", placeholder)
+	qs, err := gosplitargs.SplitSQL(app.ManagedTokens.Query, ";", true)
+	if err != nil {
+		return err
+	}
+	if len(qs) == 0 {
+		return fmt.Errorf("no query found")
+	}
+	app.ManagedTokens.Query = qs[0]
 	return nil
 }
 
@@ -326,6 +340,12 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			orderbyClause := ""
 			if orderBy != nil && orderBy != "" {
 				orderbyClause = fmt.Sprintf("ORDER BY %v", orderBy)
+			}
+
+			if database.Type == "sqlserver" {
+				if orderbyClause == "" && limitClause != "" {
+					orderbyClause = "ORDER BY (SELECT NULL)"
+				}
 			}
 
 			sqlSafe(&table.Name)
