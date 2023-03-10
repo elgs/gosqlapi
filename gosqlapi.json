@@ -19,9 +19,17 @@
   "tables": {
     "test_table": {
       "database": "test_db",
-      "name": "test_table",
+      "name": "TEST_TABLE",
       "public_read": true,
       "public_write": true
+    },
+    "token_table": {
+      "database": "test_db",
+      "name": "TOKENS"
     }
+  },
+  "token_table": {
+    "database": "test_db",
+    "query_path": "token_query.sql"
   }
 }
