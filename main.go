@@ -14,7 +14,7 @@ func init() {
 }
 
 var app *App
-var version = "9"
+var version = "10"
 
 func main() {
 	v := flag.Bool("v", false, "prints version")
@@ -32,7 +32,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	err = buildTokenQuery()
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.HandleFunc("/", defaultHandler)
 
 	if app.Web.HttpAddr != "" {
