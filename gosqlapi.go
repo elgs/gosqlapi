@@ -347,9 +347,6 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				return nil, err
 			}
 
-			fmt.Printf("count: %+v\n", count)
-			fmt.Printf("data: %+v\n", data)
-
 			return map[string]interface{}{
 				"count":  count[0]["count"],
 				"limit":  limit,
