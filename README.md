@@ -198,11 +198,11 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 [{"id":2,"name":"Beta"}]
 ```
 
-#### Search for records with .limit, .offset and .order_by
+#### Search for records with .page_size, .offset and .order_by
 
 ```bash
 $ curl --request GET \
-  --url 'http://localhost:8080/test_db/test_table?.limit=2&.offset=1'
+  --url 'http://localhost:8080/test_db/test_table?.page_size=2&.offset=1'
 {
   "count": 3,
   "data": [
@@ -215,18 +215,18 @@ $ curl --request GET \
       "name": "Gamma"
     }
   ],
-  "limit": "2",
+  "page_size": "2",
   "offset": "1"
 }
 ```
 
 You can use the following parameters:
 
-- `.limit`: limit the number of records returned
+- `.page_size`: maximum number of records returned
 - `.offset`: offset the number of records returned
 - `.order_by`: order the records returned
 
-You can give a table a default limit and order_by by setting `page_size` and `order_by` in `gosqlapi.json`:
+You can give a table a default page_size and order_by by setting `page_size` and `order_by` in `gosqlapi.json`:
 
 ```json
 {
