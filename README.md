@@ -203,7 +203,6 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 ```bash
 $ curl --request GET \
   --url 'http://localhost:8080/test_db/test_table?.limit=2&.offset=1' \
-  --header 'Content-Type: application/json'
 {
   "count": 3,
   "data": [
