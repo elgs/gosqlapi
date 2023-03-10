@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/elgs/gosplitargs"
@@ -315,20 +316,39 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 	switch method {
 	case http.MethodGet:
 		if dataId == "" {
-			pageSize := params[".page_size"]
-			if pageSize == nil || pageSize == "" || pageSize == "0" || pageSize == 0 {
+			pageSize := 0
+			switch _pageSize := params[".page_size"].(type) {
+			case string:
+				pageSize, err = strconv.Atoi(_pageSize)
+				if err != nil {
+					return nil, err
+				}
+			case int:
+				pageSize = _pageSize
+			case int64:
+				pageSize = int(_pageSize)
+			}
+			if pageSize == 0 {
 				pageSize = table.PageSize
 			}
-			if pageSize == nil || pageSize == "" || pageSize == "0" || pageSize == 0 {
+			if pageSize == 0 {
 				pageSize = app.DefaultPageSize
 			}
-			if pageSize == nil || pageSize == "" || pageSize == "0" || pageSize == 0 {
+			if pageSize == 0 {
 				pageSize = 100
 			}
 
-			offset := params[".offset"]
-			if offset == nil {
-				offset = 0
+			offset := 0
+			switch _offset := params[".offset"].(type) {
+			case string:
+				offset, err = strconv.Atoi(_offset)
+				if err != nil {
+					return nil, err
+				}
+			case int:
+				offset = _offset
+			case int64:
+				offset = int(_offset)
 			}
 
 			limitClause := database.GetLimitClause(pageSize, offset)
@@ -362,13 +382,26 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				return nil, err
 			}
 
-			count, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT COUNT(*) AS count FROM %v WHERE 1=1 %v`, table.Name, where), values...)
+			_total, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %v WHERE 1=1 %v`, table.Name, where), values...)
 			if err != nil {
 				return nil, err
 			}
 
+			total := 0
+			switch v := _total[0]["total"].(type) {
+			case string:
+				total, err = strconv.Atoi(v)
+				if err != nil {
+					return nil, err
+				}
+			case int:
+				total = v
+			case int64:
+				total = int(v)
+			}
+
 			return map[string]interface{}{
-				"count":     count[0]["count"],
+				"total":     total,
 				"page_size": pageSize,
 				"offset":    offset,
 				"data":      data,
