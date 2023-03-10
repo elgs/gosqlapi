@@ -269,7 +269,7 @@ Managed tokens are stored in the database. The table and database that will stor
 {
   "token_table": {
     "database": "test_db",
-    "table_name": "tokens"
+    "table_name": "TOKENS"
   }
 }
 ```
@@ -277,7 +277,7 @@ Managed tokens are stored in the database. The table and database that will stor
 The table that stores managed tokens should have the following schema:
 
 ```sql
-CREATE TABLE IF NOT EXISTS `tokens` (
+CREATE TABLE IF NOT EXISTS `TOKENS` (
   `ID` CHAR(36) NOT NULL,
   `USER_ID` CHAR(36) NOT NULL,
   `TOKEN` VARCHAR(255) NOT NULL,              -- required, auth token
@@ -288,6 +288,7 @@ CREATE TABLE IF NOT EXISTS `tokens` (
   `EXEC_PRIVATE` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
   CONSTRAINT `PRIMARY` PRIMARY KEY (`ID`)
 );
+create INDEX TOKEN_INDEX ON TOKENS (TOKEN);
 ```
 
 Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
@@ -300,7 +301,7 @@ If you already have a table that stores managed tokens, you can map the fields i
 {
   "token_table": {
     "database": "test_db",
-    "table_name": "tokens",
+    "table_name": "TOKENS",
     "token": "AUTH_TOKEN",
     "target_database": "TARGET_DATABASE",
     "target_objects": "TARGET_OBJECTS",
