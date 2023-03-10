@@ -337,7 +337,25 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				return nil, err
 			}
 			q := fmt.Sprintf(`SELECT * FROM %v WHERE 1=1 %v %v %v`, table.Name, where, orderbyClause, limitClause)
-			return gosqljson.QueryToMaps(db, gosqljson.Lower, q, values...)
+			data, err := gosqljson.QueryToMaps(db, gosqljson.Lower, q, values...)
+			if err != nil {
+				return nil, err
+			}
+
+			count, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT COUNT(*) AS count FROM %v WHERE 1=1 %v`, table.Name, where), values...)
+			if err != nil {
+				return nil, err
+			}
+
+			fmt.Printf("count: %+v\n", count)
+			fmt.Printf("data: %+v\n", data)
+
+			return map[string]interface{}{
+				"count":  count[0]["count"],
+				"limit":  limit,
+				"offset": offset,
+				"data":   data,
+			}, nil
 		} else {
 			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {

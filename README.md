@@ -203,7 +203,7 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 ```bash
 $ curl -X GET 'http://localhost:8080/test_db/test_table?.limit=2&.offset=1&.order_by=name%20asc%2C%20id%20desc' \
   --header 'Content-Type: application/json'
-[{"id":2,"name":"Beta"},{"id":3,"name":"Gamma"}]
+{"count":3,"data":[{"id":2,"name":"Beta"},{"id":3,"name":"Gamma"}],"limit":"2","offset":"1"}
 ```
 
 You can use the following parameters:
