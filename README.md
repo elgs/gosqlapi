@@ -9,7 +9,7 @@ The intention of `gosqlapi` is not to replace a full-fledged backend server, but
 Install `gosqlapi` with one of the following commands, depending on the databases you want to use:
 
 ```bash
-# Install gosqlapi for all databases
+# Install gosqlapi for all databases, except mattn's sqlite3 because of CGO, 
 $ go install github.com/elgs/gosqlapi@all
 
 # Install gosqlapi for MySQL and MariaDB - https://github.com/go-sql-driver/mysql
