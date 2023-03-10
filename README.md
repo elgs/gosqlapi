@@ -34,6 +34,12 @@ $ go install github.com/elgs/gosqlapi@sqlite
 $ go install github.com/elgs/gosqlapi@latest
 ```
 
+To remove `gosqlapi`:
+
+```bash
+$ go clean -i github.com/elgs/gosqlapi
+```
+
 ### If installation fails because of CGO
 
 If you run into any CGO related compilation issues because of `github.com/mattn/go-sqlite3` sqlite3 driver, you can try to install `gosqlapi` with the following command:
@@ -109,7 +115,7 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
   "tables": {
     "test_table": {
       "database": "test_db",
-      "name": "test_table",
+      "name": "TEST_TABLE",
       "public_read": true,
       "public_write": true
     }
@@ -120,18 +126,18 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
 `init.sql`:
 
 ```sql
-drop TABLE IF EXISTS test_table;
-create TABLE IF NOT EXISTS test_table(
+drop TABLE IF EXISTS TEST_TABLE;
+create TABLE IF NOT EXISTS TEST_TABLE(
     ID INTEGER NOT NULL PRIMARY KEY,
     NAME VARCHAR(50)
 );
 
-insert INTO test_table (ID, NAME) VALUES (1, 'Alpha');
-insert INTO test_table (ID, NAME) VALUES (2, 'Beta');
-insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
+insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha');
+insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta');
+insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma');
 
 -- @label: data
-SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
+SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
 ```
 
 ### On the client side
@@ -195,9 +201,23 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 #### Search for records with .limit, .offset and .order_by
 
 ```bash
-$ curl -X GET 'http://localhost:8080/test_db/test_table?.limit=2&.offset=1&.order_by=name%20asc%2C%20id%20desc' \
-  --header 'Content-Type: application/json'
-[{"id":2,"name":"Beta"},{"id":3,"name":"Gamma"}]
+$ curl --request GET \
+  --url 'http://localhost:8080/test_db/test_table?.limit=2&.offset=1'
+{
+  "count": 3,
+  "data": [
+    {
+      "id": 2,
+      "name": "Beta"
+    },
+    {
+      "id": 3,
+      "name": "Gamma"
+    }
+  ],
+  "limit": "2",
+  "offset": "1"
+}
 ```
 
 You can use the following parameters:
@@ -213,7 +233,7 @@ You can give a table a default limit and order_by by setting `page_size` and `or
   "tables": {
     "test_table": {
       "database": "test_db",
-      "name": "test_table",
+      "name": "TEST_TABLE",
       "public_read": true,
       "public_write": true,
       "page_size": 10,
@@ -253,17 +273,19 @@ Simple tokens are configured in `gosqlapi.json`:
 }
 ```
 
-In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
+In the example above, the auth token is configured to allow users to read and write `test_table` and execute `init` script in `test_db`.
 
 ### Managed Tokens
 
-Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `token_table` in `gosqlapi.json`.
+#### Token Table
+
+Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `managed_tokens` in `gosqlapi.json`.
 
 ```json
 {
-  "token_table": {
+  "managed_tokens": {
     "database": "test_db",
-    "table_name": "tokens"
+    "table_name": "TOKENS"
   }
 }
 ```
@@ -271,7 +293,7 @@ Managed tokens are stored in the database. The table and database that will stor
 The table that stores managed tokens should have the following schema:
 
 ```sql
-CREATE TABLE IF NOT EXISTS `tokens` (
+CREATE TABLE IF NOT EXISTS `TOKENS` (
   `ID` CHAR(36) NOT NULL,
   `USER_ID` CHAR(36) NOT NULL,
   `TOKEN` VARCHAR(255) NOT NULL,              -- required, auth token
@@ -282,19 +304,20 @@ CREATE TABLE IF NOT EXISTS `tokens` (
   `EXEC_PRIVATE` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
   CONSTRAINT `PRIMARY` PRIMARY KEY (`ID`)
 );
+create INDEX TOKEN_INDEX ON TOKENS (TOKEN);
 ```
 
 Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
 
-When `token_table` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
+When `managed_tokens` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
 
-If you already have a table that stores managed tokens, you can map the fields in the `token_table` table as follows:
+If you already have a table that stores managed tokens, you can map the fields in that token table as follows:
 
 ```json
 {
-  "token_table": {
+  "managed_tokens": {
     "database": "test_db",
-    "table_name": "tokens",
+    "table_name": "TOKENS",
     "token": "AUTH_TOKEN",
     "target_database": "TARGET_DATABASE",
     "target_objects": "TARGET_OBJECTS",
@@ -307,23 +330,47 @@ If you already have a table that stores managed tokens, you can map the fields i
 
 For example, if your token table has the field `AUTH_TOKEN` instead of `TOKEN`, you can use the configuration above to map the field `AUTH_TOKEN` to `TOKEN`.
 
+#### Token Query
+
+Instead of specifying the `table_name`, you can use a `query` in the config. The `query` should return the same columns as the token table.
+
+```json
+{
+  "managed_tokens": {
+    "database": "test_db",
+    "query": "SELECT TARGET_DATABASE AS target_database, TARGET_OBJECTS AS target_objects, READ_PRIVATE AS read_private, WRITE_PRIVATE AS write_private, EXEC_PRIVATE AS exec_private FROM TOKENS WHERE TOKEN=?token?"
+  }
+}
+```
+
+The placeholder will be replaced with the auth token. If the `query` is getting too long, you can use a separate file to store the query.
+
+```json
+{
+  "managed_tokens": {
+    "database": "test_db",
+    "query_path": "token_query.sql"
+  }
+}
+```
+
 ## Pre-defined SQL Queries
 
 There are a few things to note when defining a pre-defined SQL query in a script:
 
 ```sql
-drop TABLE IF EXISTS test_table;
-create TABLE IF NOT EXISTS test_table(
+drop TABLE IF EXISTS TEST_TABLE;
+create TABLE IF NOT EXISTS TEST_TABLE(
     ID INTEGER NOT NULL PRIMARY KEY,
     NAME TEXT
 );
 
-insert INTO test_table (ID, NAME) VALUES (1, 'Alpha');
-insert INTO test_table (ID, NAME) VALUES (2, 'Beta');
-insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
+insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha');
+insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta');
+insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma');
 
 -- @label: data
-SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
+SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
 ```
 
 1. You can define multiple SQL statements in a single script. The statements will be executed in the order they appear in the script. The script will be executed in a transaction. If any statement fails, the transaction will be rolled back, and if all statements succeed, the transaction will be committed. Statements in the script are separated by `;`.
@@ -340,7 +387,7 @@ You have the option to define a script inline in the `gosqlapi.json` file. This 
   "scripts": {
     "init": {
       "database": "test_db",
-      "sql": "drop TABLE IF EXISTS test_table; create TABLE IF NOT EXISTS test_table( ID INTEGER NOT NULL PRIMARY KEY, NAME TEXT ); insert INTO test_table (ID, NAME) VALUES (1, 'Alpha'); insert INTO test_table (ID, NAME) VALUES (2, 'Beta'); insert INTO test_table (ID, NAME) VALUES (3, 'Gamma'); -- @label: data \n SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;"
+      "sql": "drop TABLE IF EXISTS TEST_TABLE; create TABLE IF NOT EXISTS TEST_TABLE( ID INTEGER NOT NULL PRIMARY KEY, NAME TEXT ); insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha'); insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta'); insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma'); -- @label: data \n SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;"
     }
   }
 }
@@ -448,7 +495,7 @@ https://github.com/jackc/pgx
   "databases": {
     "test_db": {
       "type": "sqlserver",
-      "url": "sqlserver://user:pass@localhost:1433/test_db"
+      "url": "sqlserver://user:pass@localhost:1433?database=test_db"
     }
   }
 }

@@ -3,7 +3,7 @@ module github.com/elgs/gosqlapi
 go 1.20
 
 require (
-	github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8
+	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqljson v0.0.0-20230306114115-5d7882c90328
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/jackc/pgx/v5 v5.3.1

@@ -10,8 +10,8 @@ github.com/dnaeon/go-vcr v1.1.0/go.mod h1:M7tiix8f0r6mKKJ3Yq/kqU1OYf3MnfmBWVbPx/
 github.com/dnaeon/go-vcr v1.2.0/go.mod h1:R4UdLID7HZT3taECzJs4YgbbH6PIGXB6W/sc5OLb6RQ=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
-github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8 h1:bD2/rCXwgXJm2vgoSSSCM9IPjVFfEoQFFblzg7HHABI=
-github.com/elgs/gosplitargs v0.0.0-20161028071935-a491c5eeb3c8/go.mod h1:o4DgpccPNAQAlPSxo7I4L/LWNh2oyr/BBGSynrLTmZM=
+github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a h1:vO9yvZPJqJMJJsFdaD+sLkwjZfxzr/0fm22AnW8R6ms=
+github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a/go.mod h1:1zHirgOZTAY00iwXKAX0NsVKjwkwjSr1P+yqciHfRH0=
 github.com/elgs/gosqljson v0.0.0-20230306114115-5d7882c90328 h1:aPiLr7w9T2Lh+WZT/WQGO4OxQuhx8VQYWWHT742zR2w=
 github.com/elgs/gosqljson v0.0.0-20230306114115-5d7882c90328/go.mod h1:yiGjTv9QS1JB/s9dMPnG1Ck/eu7k7Q9rQUGh4rdlSkI=
 github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ7YPc=
@@ -69,7 +69,7 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
+github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
