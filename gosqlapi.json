@@ -28,7 +28,7 @@
       "name": "TOKENS"
     }
   },
-  "token_table": {
+  "managed_tokens": {
     "database": "test_db",
     "query_path": "token_query.sql"
   }

@@ -12,7 +12,7 @@ type App struct {
 	Scripts         map[string]*Script    `json:"scripts"`
 	Tables          map[string]*Table     `json:"tables"`
 	Tokens          map[string]*[]*Access `json:"tokens"`
-	TokenTable      *TokenTable           `json:"token_table"`
+	ManagedTokens   *TokenTable           `json:"managed_tokens"`
 	DefaultPageSize int                   `json:"default_page_size"`
 }
 

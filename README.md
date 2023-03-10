@@ -263,11 +263,13 @@ In the example above, the auth token is configured to allow users to read and wr
 
 ### Managed Tokens
 
-Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `token_table` in `gosqlapi.json`.
+#### Token Table
+
+Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `managed_tokens` in `gosqlapi.json`.
 
 ```json
 {
-  "token_table": {
+  "managed_tokens": {
     "database": "test_db",
     "table_name": "TOKENS"
   }
@@ -293,13 +295,13 @@ create INDEX TOKEN_INDEX ON TOKENS (TOKEN);
 
 Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
 
-When `token_table` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
+When `managed_tokens` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
 
-If you already have a table that stores managed tokens, you can map the fields in the `token_table` table as follows:
+If you already have a table that stores managed tokens, you can map the fields in that token table as follows:
 
 ```json
 {
-  "token_table": {
+  "managed_tokens": {
     "database": "test_db",
     "table_name": "TOKENS",
     "token": "AUTH_TOKEN",
@@ -313,6 +315,39 @@ If you already have a table that stores managed tokens, you can map the fields i
 ```
 
 For example, if your token table has the field `AUTH_TOKEN` instead of `TOKEN`, you can use the configuration above to map the field `AUTH_TOKEN` to `TOKEN`.
+
+#### Token Query
+
+Instead of specifying the `table_name`, you can use a `query` in the config. The `query` should return the same columns as the token table.
+
+```json
+{
+  "managed_tokens": {
+    "database": "test_db",
+    "query": "SELECT \
+        TARGET_DATABASE AS target_database, \
+        TARGET_OBJECTS AS target_objects, \
+        READ_PRIVATE AS read_private, \
+        WRITE_PRIVATE AS write_private, \
+        EXEC_PRIVATE AS exec_private \
+    FROM TOKENS \
+    WHERE TOKEN = ?"
+  }
+}
+```
+
+The placeholder will be replaced with the auth token. The question mark `?` used as the placeholder is an example for SQLite, MySQL and MariaDB. For other databases, please refer to the documentation of the database driver. For example, for PostgreSQL, the placeholder should be `$1`. for SQL Server, the placeholder should be `@p1`, and for Oracle, the placeholder should be `:1`.
+
+If the `query` is getting too long, you can use a separate file to store the query.
+
+```json
+{
+  "managed_tokens": {
+    "database": "test_db",
+    "query_path": "token_query.sql"
+  }
+}
+```
 
 ## Pre-defined SQL Queries
 

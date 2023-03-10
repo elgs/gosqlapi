@@ -151,35 +151,35 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func buildTokenQuery() error {
-	if app.TokenTable == nil {
+	if app.ManagedTokens == nil {
 		return nil
 	}
-	if app.TokenTable.QueryPath != "" {
-		tokenQuery, err := os.ReadFile(app.TokenTable.QueryPath)
+	if app.ManagedTokens.QueryPath != "" {
+		tokenQuery, err := os.ReadFile(app.ManagedTokens.QueryPath)
 		if err != nil {
 			return err
 		}
-		app.TokenTable.Query = string(tokenQuery)
-		app.TokenTable.QueryPath = ""
+		app.ManagedTokens.Query = string(tokenQuery)
+		app.ManagedTokens.QueryPath = ""
 	}
 
-	if app.TokenTable.Query == "" {
-		app.TokenTable.Query = fmt.Sprintf(`SELECT 
+	if app.ManagedTokens.Query == "" {
+		app.ManagedTokens.Query = fmt.Sprintf(`SELECT 
 	%s AS "target_database",
 	%s AS "target_objects",
 	%s AS "read_private",
 	%s AS "write_private",
 	%s AS "exec_private"
 	FROM %s WHERE %s=?`,
-			app.TokenTable.TargetDatabase,
-			app.TokenTable.TargetObjects,
-			app.TokenTable.ReadPrivate,
-			app.TokenTable.WritePrivate,
-			app.TokenTable.ExecPrivate,
-			app.TokenTable.TableName,
-			app.TokenTable.Token)
+			app.ManagedTokens.TargetDatabase,
+			app.ManagedTokens.TargetObjects,
+			app.ManagedTokens.ReadPrivate,
+			app.ManagedTokens.WritePrivate,
+			app.ManagedTokens.ExecPrivate,
+			app.ManagedTokens.TableName,
+			app.ManagedTokens.Token)
 	}
-	sqlSafe(&app.TokenTable.Query)
+	sqlSafe(&app.ManagedTokens.Query)
 	return nil
 }
 
@@ -215,10 +215,10 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	}
 
 	// managed tokens
-	if app.TokenTable != nil {
-		managedDatabase := app.Databases[app.TokenTable.Database]
+	if app.ManagedTokens != nil {
+		managedDatabase := app.Databases[app.ManagedTokens.Database]
 		if managedDatabase == nil {
-			return false, fmt.Errorf("database %v not found", app.TokenTable.Database)
+			return false, fmt.Errorf("database %v not found", app.ManagedTokens.Database)
 		}
 		tokenDB, err := managedDatabase.GetConn()
 		if err != nil {
@@ -226,29 +226,29 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		}
 
 		accesses := []Access{}
-		if app.TokenTable.TableName == "" {
-			app.TokenTable.TableName = "tokens"
+		if app.ManagedTokens.TableName == "" {
+			app.ManagedTokens.TableName = "tokens"
 		}
-		if app.TokenTable.Token == "" {
-			app.TokenTable.Token = "TOKEN"
+		if app.ManagedTokens.Token == "" {
+			app.ManagedTokens.Token = "TOKEN"
 		}
-		if app.TokenTable.TargetDatabase == "" {
-			app.TokenTable.TargetDatabase = "TARGET_DATABASE"
+		if app.ManagedTokens.TargetDatabase == "" {
+			app.ManagedTokens.TargetDatabase = "TARGET_DATABASE"
 		}
-		if app.TokenTable.TargetObjects == "" {
-			app.TokenTable.TargetObjects = "TARGET_OBJECTS"
+		if app.ManagedTokens.TargetObjects == "" {
+			app.ManagedTokens.TargetObjects = "TARGET_OBJECTS"
 		}
-		if app.TokenTable.ReadPrivate == "" {
-			app.TokenTable.ReadPrivate = "READ_PRIVATE"
+		if app.ManagedTokens.ReadPrivate == "" {
+			app.ManagedTokens.ReadPrivate = "READ_PRIVATE"
 		}
-		if app.TokenTable.WritePrivate == "" {
-			app.TokenTable.WritePrivate = "WRITE_PRIVATE"
+		if app.ManagedTokens.WritePrivate == "" {
+			app.ManagedTokens.WritePrivate = "WRITE_PRIVATE"
 		}
-		if app.TokenTable.ExecPrivate == "" {
-			app.TokenTable.ExecPrivate = "EXEC_PRIVATE"
+		if app.ManagedTokens.ExecPrivate == "" {
+			app.ManagedTokens.ExecPrivate = "EXEC_PRIVATE"
 		}
 
-		err = gosqljson.QueryToStructs(tokenDB, &accesses, app.TokenTable.Query, authHeader)
+		err = gosqljson.QueryToStructs(tokenDB, &accesses, app.ManagedTokens.Query, authHeader)
 		if err != nil {
 			return false, err
 		}
