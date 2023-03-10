@@ -14,7 +14,7 @@ func init() {
 }
 
 var app *App
-var version = "11"
+var version = "12"
 
 func main() {
 	v := flag.Bool("v", false, "prints version")
