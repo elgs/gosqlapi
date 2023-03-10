@@ -37,7 +37,7 @@ do
             if [ $os = "windows" ]; then
                 output_name+='.exe'
             fi
-            GOOS="$os" GOARCH="$arch" go build -o "$output_name"
+            GOOS="$os" GOARCH="$arch" GOPROXY=direct go build -o "$output_name"
         done
     done
 done
