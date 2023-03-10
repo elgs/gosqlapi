@@ -204,19 +204,19 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 $ curl --request GET \
   --url 'http://localhost:8080/test_db/test_table?.page_size=2&.offset=1'
 {
-  "count": 3,
   "data": [
     {
-      "id": 2,
+      "id": "2",
       "name": "Beta"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Gamma"
     }
   ],
-  "page_size": "2",
-  "offset": "1"
+  "offset": 1,
+  "page_size": 2,
+  "total": 3
 }
 ```
 
