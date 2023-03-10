@@ -32,7 +32,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	err = buildTokenQuery()
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.HandleFunc("/", defaultHandler)
 
 	if app.Web.HttpAddr != "" {

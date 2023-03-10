@@ -1,16 +1,28 @@
-drop TABLE IF EXISTS test_table;
+drop TABLE IF EXISTS TEST_TABLE;
+drop table IF EXISTS TOKENS;
 
-create TABLE test_table(  
+create TABLE TEST_TABLE (
     ID INTEGER NOT NULL PRIMARY KEY,
     NAME VARCHAR(50)
 );
 
-insert INTO test_table (ID, NAME) VALUES (1, 'Alpha');
+insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha');
 
-insert INTO test_table (ID, NAME) VALUES (2, 'Beta');
+insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta');
 
-insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
+insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma');
 
 
 -- @label: data
-SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
+SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
+
+create TABLE TOKENS ( 
+  ID INTEGER NOT NULL PRIMARY KEY,
+  TOKEN VARCHAR(255) NOT NULL,
+  TARGET_DATABASE VARCHAR(255) NOT NULL,
+  TARGET_OBJECTS VARCHAR(255) NOT NULL,
+  READ_PRIVATE INT NOT NULL,
+  WRITE_PRIVATE INT NOT NULL,
+  EXEC_PRIVATE INT NOT NULL
+);
+create INDEX TOKEN_INDEX ON TOKENS (TOKEN);

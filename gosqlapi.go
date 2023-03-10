@@ -150,6 +150,39 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, jsonString)
 }
 
+func buildTokenQuery() error {
+	if app.TokenTable == nil {
+		return nil
+	}
+	if app.TokenTable.QueryPath != "" {
+		tokenQuery, err := os.ReadFile(app.TokenTable.QueryPath)
+		if err != nil {
+			return err
+		}
+		app.TokenTable.Query = string(tokenQuery)
+		app.TokenTable.QueryPath = ""
+	}
+
+	if app.TokenTable.Query == "" {
+		app.TokenTable.Query = fmt.Sprintf(`SELECT 
+	%s AS "target_database",
+	%s AS "target_objects",
+	%s AS "read_private",
+	%s AS "write_private",
+	%s AS "exec_private"
+	FROM %s WHERE %s=?`,
+			app.TokenTable.TargetDatabase,
+			app.TokenTable.TargetObjects,
+			app.TokenTable.ReadPrivate,
+			app.TokenTable.WritePrivate,
+			app.TokenTable.ExecPrivate,
+			app.TokenTable.TableName,
+			app.TokenTable.Token)
+	}
+	sqlSafe(&app.TokenTable.Query)
+	return nil
+}
+
 func authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
 
 	if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
@@ -215,21 +248,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 			app.TokenTable.ExecPrivate = "EXEC_PRIVATE"
 		}
 
-		tokenQuery := fmt.Sprintf(`SELECT 
-		%s AS "target_database",
-		%s AS "target_objects",
-		%s AS "read_private",
-		%s AS "write_private",
-		%s AS "exec_private"
-		FROM %s WHERE %s=?`,
-			app.TokenTable.TargetDatabase,
-			app.TokenTable.TargetObjects,
-			app.TokenTable.ReadPrivate,
-			app.TokenTable.WritePrivate,
-			app.TokenTable.ExecPrivate,
-			app.TokenTable.TableName,
-			app.TokenTable.Token)
-		err = gosqljson.QueryToStructs(tokenDB, &accesses, tokenQuery, authHeader)
+		err = gosqljson.QueryToStructs(tokenDB, &accesses, app.TokenTable.Query, authHeader)
 		if err != nil {
 			return false, err
 		}

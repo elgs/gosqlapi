@@ -73,6 +73,8 @@ type Access struct {
 type TokenTable struct {
 	Database       string `json:"database"`
 	TableName      string `json:"table_name"`
+	Query          string `json:"query"`
+	QueryPath      string `json:"query_path"`
 	Token          string `json:"token"`
 	TargetDatabase string `json:"target_database"`
 	TargetObjects  string `json:"target_objects"`

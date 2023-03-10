@@ -34,6 +34,12 @@ $ go install github.com/elgs/gosqlapi@sqlite
 $ go install github.com/elgs/gosqlapi@latest
 ```
 
+To remove `gosqlapi`:
+
+```bash
+$ go clean -i github.com/elgs/gosqlapi
+```
+
 ### If installation fails because of CGO
 
 If you run into any CGO related compilation issues because of `github.com/mattn/go-sqlite3` sqlite3 driver, you can try to install `gosqlapi` with the following command:
@@ -109,7 +115,7 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
   "tables": {
     "test_table": {
       "database": "test_db",
-      "name": "test_table",
+      "name": "TEST_TABLE",
       "public_read": true,
       "public_write": true
     }
@@ -120,18 +126,18 @@ Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqla
 `init.sql`:
 
 ```sql
-drop TABLE IF EXISTS test_table;
-create TABLE IF NOT EXISTS test_table(
+drop TABLE IF EXISTS TEST_TABLE;
+create TABLE IF NOT EXISTS TEST_TABLE(
     ID INTEGER NOT NULL PRIMARY KEY,
     NAME VARCHAR(50)
 );
 
-insert INTO test_table (ID, NAME) VALUES (1, 'Alpha');
-insert INTO test_table (ID, NAME) VALUES (2, 'Beta');
-insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
+insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha');
+insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta');
+insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma');
 
 -- @label: data
-SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
+SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
 ```
 
 ### On the client side
@@ -213,7 +219,7 @@ You can give a table a default limit and order_by by setting `page_size` and `or
   "tables": {
     "test_table": {
       "database": "test_db",
-      "name": "test_table",
+      "name": "TEST_TABLE",
       "public_read": true,
       "public_write": true,
       "page_size": 10,
@@ -253,7 +259,7 @@ Simple tokens are configured in `gosqlapi.json`:
 }
 ```
 
-In the example above, the auth token is configured to allow the user to read and write `test_table` and execute `init` script in `test_db`.
+In the example above, the auth token is configured to allow users to read and write `test_table` and execute `init` script in `test_db`.
 
 ### Managed Tokens
 
@@ -312,18 +318,18 @@ For example, if your token table has the field `AUTH_TOKEN` instead of `TOKEN`, 
 There are a few things to note when defining a pre-defined SQL query in a script:
 
 ```sql
-drop TABLE IF EXISTS test_table;
-create TABLE IF NOT EXISTS test_table(
+drop TABLE IF EXISTS TEST_TABLE;
+create TABLE IF NOT EXISTS TEST_TABLE(
     ID INTEGER NOT NULL PRIMARY KEY,
     NAME TEXT
 );
 
-insert INTO test_table (ID, NAME) VALUES (1, 'Alpha');
-insert INTO test_table (ID, NAME) VALUES (2, 'Beta');
-insert INTO test_table (ID, NAME) VALUES (3, 'Gamma');
+insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha');
+insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta');
+insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma');
 
 -- @label: data
-SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;
+SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
 ```
 
 1. You can define multiple SQL statements in a single script. The statements will be executed in the order they appear in the script. The script will be executed in a transaction. If any statement fails, the transaction will be rolled back, and if all statements succeed, the transaction will be committed. Statements in the script are separated by `;`.
@@ -340,7 +346,7 @@ You have the option to define a script inline in the `gosqlapi.json` file. This 
   "scripts": {
     "init": {
       "database": "test_db",
-      "sql": "drop TABLE IF EXISTS test_table; create TABLE IF NOT EXISTS test_table( ID INTEGER NOT NULL PRIMARY KEY, NAME TEXT ); insert INTO test_table (ID, NAME) VALUES (1, 'Alpha'); insert INTO test_table (ID, NAME) VALUES (2, 'Beta'); insert INTO test_table (ID, NAME) VALUES (3, 'Gamma'); -- @label: data \n SELECT * FROM test_table WHERE ID > ?low? AND ID < ?high?;"
+      "sql": "drop TABLE IF EXISTS TEST_TABLE; create TABLE IF NOT EXISTS TEST_TABLE( ID INTEGER NOT NULL PRIMARY KEY, NAME TEXT ); insert INTO TEST_TABLE (ID, NAME) VALUES (1, 'Alpha'); insert INTO TEST_TABLE (ID, NAME) VALUES (2, 'Beta'); insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma'); -- @label: data \n SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;"
     }
   }
 }
@@ -448,7 +454,7 @@ https://github.com/jackc/pgx
   "databases": {
     "test_db": {
       "type": "sqlserver",
-      "url": "sqlserver://user:pass@localhost:1433/test_db"
+      "url": "sqlserver://user:pass@localhost:1433?database=test_db"
     }
   }
 }
