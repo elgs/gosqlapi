@@ -12,7 +12,7 @@ type App struct {
 	Scripts         map[string]*Script    `json:"scripts"`
 	Tables          map[string]*Table     `json:"tables"`
 	Tokens          map[string]*[]*Access `json:"tokens"`
-	TokenTable      *TokenTable           `json:"token_table"`
+	ManagedTokens   *TokenTable           `json:"managed_tokens"`
 	DefaultPageSize int                   `json:"default_page_size"`
 }
 
@@ -73,6 +73,8 @@ type Access struct {
 type TokenTable struct {
 	Database       string `json:"database"`
 	TableName      string `json:"table_name"`
+	Query          string `json:"query"`
+	QueryPath      string `json:"query_path"`
 	Token          string `json:"token"`
 	TargetDatabase string `json:"target_database"`
 	TargetObjects  string `json:"target_objects"`
