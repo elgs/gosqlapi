@@ -324,14 +324,7 @@ Instead of specifying the `table_name`, you can use a `query` in the config. The
 {
   "managed_tokens": {
     "database": "test_db",
-    "query": "SELECT \
-        TARGET_DATABASE AS target_database, \
-        TARGET_OBJECTS AS target_objects, \
-        READ_PRIVATE AS read_private, \
-        WRITE_PRIVATE AS write_private, \
-        EXEC_PRIVATE AS exec_private \
-    FROM TOKENS \
-    WHERE TOKEN = ?"
+    "query": "SELECT TARGET_DATABASE AS target_database, TARGET_OBJECTS AS target_objects, READ_PRIVATE AS read_private, WRITE_PRIVATE AS write_private, EXEC_PRIVATE AS exec_private FROM TOKENS WHERE TOKEN=?"
   }
 }
 ```
