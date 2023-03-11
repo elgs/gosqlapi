@@ -382,7 +382,8 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				return nil, err
 			}
 
-			_total, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %v WHERE 1=1 %v`, table.Name, where), values...)
+			qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %v WHERE 1=1 %v`, table.Name, where)
+			_total, err := gosqljson.QueryToMaps(db, gosqljson.Lower, qt, values...)
 			if err != nil {
 				return nil, err
 			}
