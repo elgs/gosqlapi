@@ -64,18 +64,6 @@ func SqlNormalize(sql *string) {
 	*sql = ret
 }
 
-func ExtractScriptParamsFromMap(m map[string]any) map[string]any {
-	ret := map[string]any{}
-	for k, v := range m {
-		if strings.HasPrefix(k, "__") {
-			vs := v.(string)
-			sqlSafe(&vs)
-			ret[k] = v
-		}
-	}
-	return ret
-}
-
 func sqlSafe(s *string) {
 	*s = strings.Replace(*s, "'", "''", -1)
 	*s = strings.Replace(*s, "--", "", -1)
