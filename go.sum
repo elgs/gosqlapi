@@ -4,8 +4,8 @@ github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a/go.mod h1:1zHirgO
 github.com/elgs/gosqljson v0.0.0-20230311205839-1ee7b5961f1a h1:iXdr8EsVghGeUB+qV1B3HwI851ZwEciBm9QyHKf11kk=
 github.com/elgs/gosqljson v0.0.0-20230311205839-1ee7b5961f1a/go.mod h1:yiGjTv9QS1JB/s9dMPnG1Ck/eu7k7Q9rQUGh4rdlSkI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
-github.com/sijms/go-ora/v2 v2.5.33 h1:ICRRyLmmFK92TPcgzKvgq8K/lhR5A2A+UB3pUL68Agg=
-github.com/sijms/go-ora/v2 v2.5.33/go.mod h1:EHxlY6x7y9HAsdfumurRfTd+v8NrEOTR3Xl4FWlH6xk=
+github.com/sijms/go-ora/v2 v2.5.34 h1:6x8gRgro5Ai/IE4pjgPJwoNpI2CQ+xPrEst8gxSG6tY=
+github.com/sijms/go-ora/v2 v2.5.34/go.mod h1:EHxlY6x7y9HAsdfumurRfTd+v8NrEOTR3Xl4FWlH6xk=
 github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
 golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0 h1:LGJsf5LRplCck6jUCH3dBL2dmycNruWNF5xugkSlfXw=
 golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
