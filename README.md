@@ -206,11 +206,11 @@ $ curl --request GET \
 {
   "data": [
     {
-      "id": "2",
+      "id": 2,
       "name": "Beta"
     },
     {
-      "id": "3",
+      "id": 3,
       "name": "Gamma"
     }
   ],
