@@ -168,7 +168,7 @@ $ curl -X POST 'http://localhost:8080/test_db/test_table' \
   --header 'Content-Type: application/json' \
   --data-raw '{
   "id": 4,
-  "name": "Gamma"
+  "name": "Delta"
 }'
 {"last_insert_id":4,"rows_affected":1}
 ```
