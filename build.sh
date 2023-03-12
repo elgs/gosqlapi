@@ -9,7 +9,6 @@ declare -a branches=(
     "mysql" 
     "pgx"
     "sqlite"
-    "sqlite3"
     "sqlserver"
     "oracle"
 )
