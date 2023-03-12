@@ -6,7 +6,6 @@ require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqljson v0.0.0-20230312205433-ce9b7f463b84
 	github.com/jackc/pgx/v5 v5.3.1
-	golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0
 )
 
 require (
