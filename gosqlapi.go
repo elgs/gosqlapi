@@ -12,7 +12,6 @@ import (
 
 	"github.com/elgs/gosplitargs"
 	"github.com/elgs/gosqljson"
-	"golang.org/x/exp/slices"
 )
 
 var format = "json"
@@ -289,7 +288,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 
 func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
 	for _, access := range *accesses {
-		if access.TargetDatabase == databaseId && slices.Contains(access.TargetObjectArray, objectId) {
+		if access.TargetDatabase == databaseId && Contains(access.TargetObjectArray, objectId) {
 			switch methodUpper {
 			case http.MethodPatch:
 				if access.ExecPrivate {
