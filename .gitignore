@@ -15,4 +15,5 @@
 # vendor/
 
 tmp/
+tests/
 build/
