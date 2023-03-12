@@ -8,7 +8,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/microsoft/go-mssqldb v0.20.0
-	github.com/sijms/go-ora/v2 v2.5.33
+	github.com/sijms/go-ora/v2 v2.5.34
 	golang.org/x/exp v0.0.0-20230310171629-522b1b587ee0
 	modernc.org/sqlite v1.21.0
 )
