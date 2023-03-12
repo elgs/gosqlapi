@@ -166,6 +166,29 @@ func buildTokenQuery() error {
 	}
 
 	if app.ManagedTokens.Query == "" {
+
+		if app.ManagedTokens.TableName == "" {
+			app.ManagedTokens.TableName = "TOKENS"
+		}
+		if app.ManagedTokens.Token == "" {
+			app.ManagedTokens.Token = "TOKEN"
+		}
+		if app.ManagedTokens.TargetDatabase == "" {
+			app.ManagedTokens.TargetDatabase = "TARGET_DATABASE"
+		}
+		if app.ManagedTokens.TargetObjects == "" {
+			app.ManagedTokens.TargetObjects = "TARGET_OBJECTS"
+		}
+		if app.ManagedTokens.ReadPrivate == "" {
+			app.ManagedTokens.ReadPrivate = "READ_PRIVATE"
+		}
+		if app.ManagedTokens.WritePrivate == "" {
+			app.ManagedTokens.WritePrivate = "WRITE_PRIVATE"
+		}
+		if app.ManagedTokens.ExecPrivate == "" {
+			app.ManagedTokens.ExecPrivate = "EXEC_PRIVATE"
+		}
+
 		app.ManagedTokens.Query = fmt.Sprintf(`SELECT 
 	%s AS "target_database",
 	%s AS "target_objects",
@@ -241,28 +264,6 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		}
 
 		accesses := []Access{}
-		if app.ManagedTokens.TableName == "" {
-			app.ManagedTokens.TableName = "tokens"
-		}
-		if app.ManagedTokens.Token == "" {
-			app.ManagedTokens.Token = "TOKEN"
-		}
-		if app.ManagedTokens.TargetDatabase == "" {
-			app.ManagedTokens.TargetDatabase = "TARGET_DATABASE"
-		}
-		if app.ManagedTokens.TargetObjects == "" {
-			app.ManagedTokens.TargetObjects = "TARGET_OBJECTS"
-		}
-		if app.ManagedTokens.ReadPrivate == "" {
-			app.ManagedTokens.ReadPrivate = "READ_PRIVATE"
-		}
-		if app.ManagedTokens.WritePrivate == "" {
-			app.ManagedTokens.WritePrivate = "WRITE_PRIVATE"
-		}
-		if app.ManagedTokens.ExecPrivate == "" {
-			app.ManagedTokens.ExecPrivate = "EXEC_PRIVATE"
-		}
-
 		err = gosqljson.QueryToStructs(tokenDB, &accesses, app.ManagedTokens.Query, authHeader)
 		if err != nil {
 			return false, err
