@@ -9,7 +9,7 @@ The intention of `gosqlapi` is not to replace a full-fledged backend server, but
 Install `gosqlapi` with one of the following commands, depending on the databases you want to use:
 
 ```bash
-# Install gosqlapi for all databases, except mattn's sqlite3 because of CGO.
+# Install gosqlapi for all databases.
 $ go install github.com/elgs/gosqlapi@all
 
 # Install gosqlapi for MySQL and MariaDB - https://github.com/go-sql-driver/mysql
@@ -24,9 +24,6 @@ $ go install github.com/elgs/gosqlapi@oracle
 # Install gosqlapi for Microsoft SQL Server - https://github.com/microsoft/go-mssqldb
 $ go install github.com/elgs/gosqlapi@sqlserver
 
-# Install gosqlapi for SQLite3 - https://github.com/mattn/go-sqlite3 (CGO required)
-$ go install github.com/elgs/gosqlapi@sqlite3
-
 # Install gosqlapi for SQLite - https://pkg.go.dev/modernc.org/sqlite
 $ go install github.com/elgs/gosqlapi@sqlite
 
@@ -34,39 +31,10 @@ $ go install github.com/elgs/gosqlapi@sqlite
 $ go install github.com/elgs/gosqlapi@latest
 ```
 
-To remove `gosqlapi`:
+To uninstall `gosqlapi`:
 
 ```bash
 $ go clean -i github.com/elgs/gosqlapi
-```
-
-### If installation fails because of CGO
-
-If you run into any CGO related compilation issues because of `github.com/mattn/go-sqlite3` sqlite3 driver, you can try to install `gosqlapi` with the following command:
-
-```bash
-$ CGO_ENABLED=0 go install github.com/elgs/gosqlapi@all
-```
-
-or on Windows:
-
-```powershell
-> cmd /C "set CGO_ENABLED=0&& go install github.com/elgs/gosqlapi@all"
-```
-
-Please note that there must be no space between `CGO_ENABLED=0` and `&&`.
-
-In this case, you will have to set database `type` as `sqlite` instead of `sqlite3` when you use SQLite3 database. For example:
-
-```json
-{
-  "databases": {
-    "test_db": {
-      "type": "sqlite",
-      "url": ":memory:"
-    }
-  }
-}
 ```
 
 ### Download pre-built binaries
@@ -428,22 +396,7 @@ The request metadata parameters are case-insensitive. The request metadata param
 
 ## Database Configuration
 
-### SQLite3
-
-```json
-{
-  "databases": {
-    "test_db": {
-      "type": "sqlite3",
-      "url": "./test_db.sqlite3"
-    }
-  }
-}
-```
-
-https://github.com/mattn/go-sqlite3
-
-or
+### SQLite
 
 ```json
 {
@@ -592,6 +545,19 @@ Check service status
 ```sh
 $ sudo systemctl status gosqlapi
 ```
+
+## Why is mattn/go-sqlite3 removed
+
+Because I cannot get cross compile to work for Windows ARM64. If you have a clue, please let me know. Thanks. If you are a macOS or Linux user, you can still use mattn/go-sqlite3 by:
+
+```bash
+$ git clone https://github.com/elgs/gosqlapi
+$ cd gosqlapi
+$ git checkout sqlite3
+$ go build
+```
+
+If you don't particularly want to use mattn/go-sqlite3, sqlite driver from `modernc.org/sqlite` is used by default.
 
 ## License
 
