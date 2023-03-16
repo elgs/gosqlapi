@@ -14,6 +14,8 @@ type App struct {
 	Tokens          map[string]*[]*Access `json:"tokens"`
 	ManagedTokens   *TokenTable           `json:"managed_tokens"`
 	DefaultPageSize int                   `json:"default_page_size"`
+	CacheTokens     bool                  `json:"cache_tokens"`
+	tokenCache      map[string]*[]*Access
 }
 
 type Web struct {
