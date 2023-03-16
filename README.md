@@ -322,6 +322,22 @@ The placeholder will be replaced with the auth token. If the `query` is getting 
 }
 ```
 
+#### Cache Managed Tokens
+
+In production, you may want to cache the managed tokens in memory. To enable caching, set `cache_tokens` to `true` in `gosqlapi.json`. This will prevent the server from querying the database for tokens for every request.
+
+```json
+{
+  "cache_tokens": true
+}
+```
+
+When any token is updated, an update to the cache is necessary. To update the token cache, send a POST request to `/.clear-tokens` with the following header:
+
+```
+Authorization: Bearer <auth token>
+```
+
 ## Pre-defined SQL Queries
 
 There are a few things to note when defining a pre-defined SQL query in a script:
