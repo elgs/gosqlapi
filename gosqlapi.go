@@ -401,7 +401,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				total = int(v)
 			}
 
-			return map[string]interface{}{
+			return map[string]any{
 				"total":     total,
 				"page_size": pageSize,
 				"offset":    offset,
