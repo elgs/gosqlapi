@@ -33,8 +33,21 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
+	authHeader := r.Header.Get("authorization")
+	if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+		authHeader = strings.TrimSpace(authHeader[7:])
+	}
+
 	urlParts := strings.Split(r.URL.Path[1:], "/")
 	databaseId := urlParts[0]
+
+	if app.CacheTokens && databaseId == ".clear-tokens" && authHeader != "" {
+		delete(app.tokenCache, authHeader)
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"success":"token cleared"}`)
+		return
+	}
+
 	database := app.Databases[databaseId]
 	if database == nil {
 		w.WriteHeader(http.StatusForbidden)
@@ -42,8 +55,6 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	objectId := urlParts[1]
-
-	authHeader := r.Header.Get("authorization")
 
 	methodUpper := strings.ToUpper(r.Method)
 
@@ -217,14 +228,11 @@ func buildTokenQuery() error {
 		return fmt.Errorf("no query found")
 	}
 	app.ManagedTokens.Query = qs[0]
+	sqlSafe(&app.ManagedTokens.Query)
 	return nil
 }
 
 func authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
-
-	if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
-		authHeader = strings.TrimSpace(authHeader[7:])
-	}
 
 	// if object is not found, return false
 	// if object is found, check if it is public
@@ -253,6 +261,9 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 
 	// managed tokens
 	if app.ManagedTokens != nil {
+		if x, ok := app.tokenCache[authHeader]; ok {
+			return hasAccess(methodUpper, x, databaseId, objectId)
+		}
 		managedDatabase := app.Databases[app.ManagedTokens.Database]
 		if managedDatabase == nil {
 			return false, fmt.Errorf("database %v not found", app.ManagedTokens.Database)
@@ -272,6 +283,10 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 			access.TargetObjectArray = strings.Fields(access.TargetObjects)
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
+		if app.tokenCache == nil {
+			app.tokenCache = make(map[string]*[]*Access)
+		}
+		app.tokenCache[authHeader] = &x
 		return hasAccess(methodUpper, &x, databaseId, objectId)
 	}
 
