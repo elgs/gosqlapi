@@ -391,37 +391,62 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			if err != nil {
 				return nil, err
 			}
-			q := fmt.Sprintf(`SELECT * FROM %v WHERE 1=1 %v %v %v`, table.Name, where, orderbyClause, limitClause)
+
+			columns := "*"
+			if table.ExportedColumns != nil && len(table.ExportedColumns) > 0 {
+				columns = strings.Join(table.ExportedColumns, ", ")
+			}
+			sqlSafe(&columns)
+
+			q := fmt.Sprintf(`SELECT %s FROM %v WHERE 1=1 %s %s %s`, columns, table.Name, where, orderbyClause, limitClause)
 			data, err := gosqljson.QueryToMaps(db, gosqljson.Lower, q, values...)
 			if err != nil {
 				return nil, err
 			}
 
-			qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %v WHERE 1=1 %v`, table.Name, where)
-			_total, err := gosqljson.QueryToMaps(db, gosqljson.Lower, qt, values...)
-			if err != nil {
-				return nil, err
+			showTotal := false
+			switch _showTotal := params[".show_total"].(type) {
+			case string:
+				showTotal = _showTotal == "true" || _showTotal == "1" || _showTotal == "yes"
+			case bool:
+				showTotal = _showTotal
+			case int:
+				showTotal = _showTotal == 1
+			case int64:
+				showTotal = _showTotal == 1
+			case nil:
+				showTotal = table.ShowTotal
 			}
 
-			total := 0
-			switch v := _total[0]["total"].(type) {
-			case string:
-				total, err = strconv.Atoi(v)
+			if showTotal {
+				qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %s WHERE 1=1 %s`, table.Name, where)
+				_total, err := gosqljson.QueryToMaps(db, gosqljson.Lower, qt, values...)
 				if err != nil {
 					return nil, err
 				}
-			case int:
-				total = v
-			case int64:
-				total = int(v)
-			}
 
-			return map[string]any{
-				"total":     total,
-				"page_size": pageSize,
-				"offset":    offset,
-				"data":      data,
-			}, nil
+				total := 0
+				switch v := _total[0]["total"].(type) {
+				case string:
+					total, err = strconv.Atoi(v)
+					if err != nil {
+						return nil, err
+					}
+				case int:
+					total = v
+				case int64:
+					total = int(v)
+				}
+
+				return map[string]any{
+					"total":     total,
+					"page_size": pageSize,
+					"offset":    offset,
+					"data":      data,
+				}, nil
+			} else {
+				return data, nil
+			}
 		} else {
 			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
 			if err != nil {
