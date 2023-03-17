@@ -193,8 +193,9 @@ You can use the following parameters:
 - `.page_size`: maximum number of records returned
 - `.offset`: offset the number of records returned
 - `.order_by`: order the records returned
+- `.show_total`: show the total number of records
 
-You can give a table a default page_size and order_by by setting `page_size` and `order_by` in `gosqlapi.json`:
+You can give a table a default `page_size`, `order_by`, `show_total` and `exported_columns` by setting `page_size` and `order_by` in `gosqlapi.json`:
 
 ```json
 {
@@ -205,11 +206,15 @@ You can give a table a default page_size and order_by by setting `page_size` and
       "public_read": true,
       "public_write": true,
       "page_size": 10,
-      "order_by": "name asc, id desc"
+      "order_by": "name asc, id desc",
+      "show_total": true,
+      "exported_columns": ["id", "name"]
     }
   }
 }
 ```
+
+if `exported_columns` is not set or is empty, all columns will be exported.
 
 ## Access Control
 
