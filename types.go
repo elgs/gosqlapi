@@ -105,12 +105,14 @@ type Script struct {
 }
 
 type Table struct {
-	Database    string `json:"database"`
-	Name        string `json:"name"`
-	PublicRead  bool   `json:"public_read"`
-	PublicWrite bool   `json:"public_write"`
-	PageSize    int    `json:"page_size"`
-	OrderBy     string `json:"order_by"`
+	Database        string   `json:"database"`
+	Name            string   `json:"name"`
+	ExportedColumns []string `json:"exported_columns"` // empty means all
+	PublicRead      bool     `json:"public_read"`
+	PublicWrite     bool     `json:"public_write"`
+	PageSize        int      `json:"page_size"`
+	OrderBy         string   `json:"order_by"`
+	ShowTotal       bool     `json:"show_total"`
 }
 
 func NewApp(confBytes []byte) (*App, error) {
