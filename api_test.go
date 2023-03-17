@@ -23,7 +23,7 @@ func (this *APITestSuite) SetupSuite() {
 func (this *APITestSuite) TearDownSuite() {
 }
 
-func (this *APITestSuite) TestExample() {
+func (this *APITestSuite) TestAPI() {
 	// patch init
 	req, err := http.NewRequest("PATCH", this.baseURL+"test_db/init/", bytes.NewBuffer([]byte(`{"low": 0,"high": 3}`)))
 	this.Nil(err)
