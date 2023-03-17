@@ -170,7 +170,7 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 
 ```bash
 $ curl --request GET \
-  --url 'http://localhost:8080/test_db/test_table?.page_size=2&.offset=1'
+  --url 'http://localhost:8080/test_db/test_table?.page_size=2&.offset=1&.show_total=1'
 {
   "data": [
     {
