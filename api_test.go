@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -35,7 +35,7 @@ func (this *APITestSuite) TestExample() {
 	defer resp.Body.Close()
 
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	this.Nil(err)
 
 	var respBody []map[string]interface{}
@@ -54,7 +54,7 @@ func (this *APITestSuite) TestExample() {
 	defer resp.Body.Close()
 
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	this.Nil(err)
 
 	var respBody2 map[string]interface{}
@@ -74,7 +74,7 @@ func (this *APITestSuite) TestExample() {
 	defer resp.Body.Close()
 
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	this.Nil(err)
 
 	var respBody3 map[string]interface{}
@@ -93,7 +93,7 @@ func (this *APITestSuite) TestExample() {
 	defer resp.Body.Close()
 
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	this.Nil(err)
 
 	var respBody4 map[string]interface{}
@@ -111,7 +111,7 @@ func (this *APITestSuite) TestExample() {
 	defer resp.Body.Close()
 
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	this.Nil(err)
 
 	var respBody5 map[string]interface{}
@@ -126,7 +126,7 @@ func (this *APITestSuite) TestExample() {
 	defer resp.Body.Close()
 
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	this.Nil(err)
 
 	var respBody6 map[string]interface{}
