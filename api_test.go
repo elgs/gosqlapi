@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -13,17 +14,40 @@ import (
 type APITestSuite struct {
 	suite.Suite
 	baseURL string
+	config  string
+}
+
+func TestAPITestSuite(t *testing.T) {
+	configs := []string{
+		"./gosqlapi.json",
+		// "./tests/sqlite.json",
+		// "./tests/mysql.json",
+		// "./tests/pgx.json",
+		// "./tests/sqlserver.json",
+		// "./tests/oracle.json",
+	}
+
+	for _, config := range configs {
+		suite.Run(t, &APITestSuite{
+			baseURL: "http://localhost:8080/",
+			config:  config,
+		})
+	}
+
 }
 
 func (this *APITestSuite) SetupSuite() {
-	go main()
-	this.baseURL = "http://localhost:8080/"
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+	go run(this.config)
 }
 
 func (this *APITestSuite) TearDownSuite() {
+	shutdown()
+	fmt.Println("-------------------------------------------------------------")
 }
 
-func (this *APITestSuite) TestExample() {
+func (this *APITestSuite) TestAPI() {
+	fmt.Println("Testing API with config:", this.config)
 	// patch init
 	req, err := http.NewRequest("PATCH", this.baseURL+"test_db/init/", bytes.NewBuffer([]byte(`{"low": 0,"high": 3}`)))
 	this.Nil(err)
@@ -140,8 +164,4 @@ func (this *APITestSuite) TestExample() {
 	this.Assert().Equal("Beta", string(respBody6["data"].([]interface{})[0].(map[string]interface{})["name"].(string)))
 	this.Assert().Equal("Gamma", string(respBody6["data"].([]interface{})[1].(map[string]interface{})["name"].(string)))
 
-}
-
-func TestAPITestSuite(t *testing.T) {
-	suite.Run(t, new(APITestSuite))
 }

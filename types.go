@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 type App struct {
@@ -19,11 +20,13 @@ type App struct {
 }
 
 type Web struct {
-	HttpAddr  string `json:"http_addr"`
-	HttpsAddr string `json:"https_addr"`
-	CertFile  string `json:"cert_file"`
-	KeyFile   string `json:"key_file"`
-	Cors      bool   `json:"cors"`
+	HttpAddr    string `json:"http_addr"`
+	HttpsAddr   string `json:"https_addr"`
+	CertFile    string `json:"cert_file"`
+	KeyFile     string `json:"key_file"`
+	Cors        bool   `json:"cors"`
+	httpServer  *http.Server
+	httpsServer *http.Server
 }
 
 type Database struct {
