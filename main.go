@@ -1,12 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 
 var app *App
 
-const version = "20"
+const version = "21"
 
 func main() {
 	v := flag.Bool("v", false, "prints version")
@@ -25,7 +25,11 @@ func main() {
 		fmt.Println(version)
 		os.Exit(0)
 	}
-	confBytes, err := os.ReadFile(*confPath)
+	run(*confPath)
+}
+
+func run(confPath string) {
+	confBytes, err := os.ReadFile(confPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,33 +41,51 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/", defaultHandler)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", defaultHandler)
 
 	if app.Web.HttpAddr != "" {
-		srv := &http.Server{
-			Addr:         app.Web.HttpAddr,
-			WriteTimeout: 15 * time.Second,
-			ReadTimeout:  15 * time.Second,
+		app.Web.httpServer = &http.Server{
+			Addr:    app.Web.HttpAddr,
+			Handler: mux,
 		}
 		go func() {
-			fmt.Println(fmt.Sprint("Listening on http://", app.Web.HttpAddr, "/"))
-			log.Fatal(srv.ListenAndServe())
+			err = app.Web.httpServer.ListenAndServe()
+			if err != nil {
+				log.Printf("http://%s/ %v\n", app.Web.HttpAddr, err)
+			}
 		}()
+		log.Printf("Listening on http://%s/\n", app.Web.HttpAddr)
 	}
 
 	if app.Web.HttpsAddr != "" {
-		srvs := &http.Server{
-			Addr:         app.Web.HttpsAddr,
-			WriteTimeout: 15 * time.Second,
-			ReadTimeout:  15 * time.Second,
+		app.Web.httpsServer = &http.Server{
+			Addr:    app.Web.HttpsAddr,
+			Handler: mux,
 		}
 		go func() {
-			fmt.Println(fmt.Sprint("Listening on https://", app.Web.HttpsAddr, "/"))
-			log.Fatal(srvs.ListenAndServeTLS(app.Web.CertFile, app.Web.KeyFile))
+			err = app.Web.httpsServer.ListenAndServeTLS(app.Web.CertFile, app.Web.KeyFile)
+			if err != nil {
+				log.Printf("https://%s/ %v\n", app.Web.HttpsAddr, err)
+			}
 		}()
+		log.Printf("Listening on https://%s/\n", app.Web.HttpsAddr)
 	}
 
-	Hook(nil)
+	Hook(func() {
+		shutdown()
+	})
+
+}
+
+func shutdown() {
+	if app.Web.httpServer != nil {
+		app.Web.httpServer.Shutdown(context.Background())
+	}
+	if app.Web.httpsServer != nil {
+		app.Web.httpsServer.Shutdown(context.Background())
+	}
 }
 
 // Check if anything uses cgo
