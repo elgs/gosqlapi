@@ -24,7 +24,9 @@ func TestAPITestSuite(t *testing.T) {
 		// "./tests/mysql.json",
 		// "./tests/pgx.json",
 		// "./tests/sqlserver.json",
-		// "./tests/oracle.json",
+
+		// "./tests/oracle.json",  // need to take care of the IF EXISTS and IF NOT EXISTS in init.sql
+		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
 	for _, config := range configs {
