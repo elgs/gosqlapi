@@ -21,7 +21,7 @@
       "database": "test_db",
       "name": "TEST_TABLE",
       "exported_columns": [
-        "name"
+        "NAME"
       ],
       "public_read": true,
       "public_write": true

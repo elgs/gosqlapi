@@ -206,9 +206,9 @@ You can give a table a default `page_size`, `order_by`, `show_total` and `export
       "public_read": true,
       "public_write": true,
       "page_size": 10,
-      "order_by": "name asc, id desc",
+      "order_by": "NAME DESC, ID ASC",
       "show_total": true,
-      "exported_columns": ["id", "name"]
+      "exported_columns": ["ID", "NAME AS USERNAME"]
     }
   }
 }
