@@ -13,7 +13,7 @@ type App struct {
 	Scripts         map[string]*Script    `json:"scripts"`
 	Tables          map[string]*Table     `json:"tables"`
 	Tokens          map[string]*[]*Access `json:"tokens"`
-	ManagedTokens   *TokenTable           `json:"managed_tokens"`
+	ManagedTokens   *ManagedTokens        `json:"managed_tokens"`
 	DefaultPageSize int                   `json:"default_page_size"`
 	CacheTokens     bool                  `json:"cache_tokens"`
 	tokenCache      map[string]*[]*Access
@@ -75,7 +75,7 @@ type Access struct {
 	ExecPrivate       bool     `json:"exec_private" db:"exec_private"`
 }
 
-type TokenTable struct {
+type ManagedTokens struct {
 	Database       string `json:"database"`
 	TableName      string `json:"table_name"`
 	Query          string `json:"query"`
@@ -110,6 +110,7 @@ type Script struct {
 type Table struct {
 	Database        string   `json:"database"`
 	Name            string   `json:"name"`
+	PrimaryKey      string   `json:"primary_key"`      // default to "ID"
 	ExportedColumns []string `json:"exported_columns"` // empty means all
 	PublicRead      bool     `json:"public_read"`
 	PublicWrite     bool     `json:"public_write"`
