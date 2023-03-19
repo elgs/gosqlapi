@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExtractSQLParameter(t *testing.T) {
@@ -39,4 +41,19 @@ func TestSplitSqlLabel(t *testing.T) {
 			t.Errorf(`%s; wanted "%s", got "%s"`, k, v, label)
 		}
 	}
+}
+
+func TestSqlSafe(t *testing.T) {
+	ss := []string{
+		"asdf",
+		"asdf'asdf",
+		"asdf--asdf",
+	}
+	for i := range ss {
+		sqlSafe(&ss[i])
+	}
+
+	assert.Equal(t, "asdf", ss[0])
+	assert.Equal(t, "asdf''asdf", ss[1])
+	assert.Equal(t, "asdfasdf", ss[2])
 }
