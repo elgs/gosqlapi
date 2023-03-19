@@ -51,7 +51,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	database := app.Databases[databaseId]
 	if database == nil {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"database %v not found"}`, urlParts[0])
+		fmt.Fprintf(w, `{"error":"database %s not found"}`, urlParts[0])
 		return
 	}
 	objectId := urlParts[1]
@@ -61,7 +61,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	authorized, err := authorize(methodUpper, authHeader, databaseId, objectId)
 	if !authorized {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
 
@@ -82,7 +82,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		script := app.Scripts[objectId]
 		if script == nil {
 			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"script %v not found"}`, objectId)
+			fmt.Fprintf(w, `{"error":"script %s not found"}`, objectId)
 			return
 		}
 		script.SQL = strings.TrimSpace(script.SQL)
@@ -95,7 +95,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
 				w.WriteHeader(http.StatusForbidden)
-				fmt.Fprintf(w, `{"error":"script %v is empty"}`, objectId)
+				fmt.Fprintf(w, `{"error":"script %s is empty"}`, objectId)
 				return
 			}
 
@@ -103,7 +103,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
 					w.WriteHeader(http.StatusForbidden)
-					fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+					fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 					return
 				}
 				script.SQL = string(f)
@@ -112,7 +112,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			err = BuildStatements(script, database.GetPlaceHolder)
 			if err != nil {
 				w.WriteHeader(http.StatusForbidden)
-				fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+				fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 				return
 			}
 			app.Scripts[objectId] = script
@@ -121,7 +121,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		result, err = runExec(database, script, params, r)
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 			return
 		}
 	} else {
@@ -132,22 +132,22 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		table := app.Tables[objectId]
 		if table == nil {
 			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"table %v not found"}`, objectId)
+			fmt.Fprintf(w, `{"error":"table %s not found"}`, objectId)
 			return
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 			return
 		}
 		if result == nil {
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
+			fmt.Fprintf(w, `{"error":"record %s not found for database %s and object %s"}`, dataId, databaseId, objectId)
 			return
 		} else if f, ok := result.(map[string]int64); ok && f["rows_affected"] == 0 {
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"record %v not found for database %v and object %v"}`, dataId, databaseId, objectId)
+			fmt.Fprintf(w, `{"error":"record %s not found for database %s and object %s"}`, dataId, databaseId, objectId)
 			return
 		}
 	}
@@ -155,7 +155,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	jsonData, err := json.Marshal(result)
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"%v"}`, err.Error())
+		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
 	jsonString := string(jsonData)
@@ -216,7 +216,7 @@ func buildTokenQuery() error {
 	}
 	tokenDb := app.Databases[app.ManagedTokens.Database]
 	if tokenDb == nil {
-		return fmt.Errorf("database %v not found", app.ManagedTokens.Database)
+		return fmt.Errorf("database %s not found", app.ManagedTokens.Database)
 	}
 	placeholder := tokenDb.GetPlaceHolder(0)
 	app.ManagedTokens.Query = strings.ReplaceAll(app.ManagedTokens.Query, "?token?", placeholder)
@@ -241,7 +241,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	if methodUpper == http.MethodPatch {
 		script := app.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
-			return false, fmt.Errorf("script %v not found", objectId)
+			return false, fmt.Errorf("script %s not found", objectId)
 		}
 		if script.PublicExec {
 			return true, nil
@@ -249,7 +249,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	} else {
 		table := app.Tables[objectId]
 		if table == nil || (table.Database != "" && table.Database != databaseId) {
-			return false, fmt.Errorf("table %v not found", objectId)
+			return false, fmt.Errorf("table %s not found", objectId)
 		}
 		if table.PublicRead && methodUpper == http.MethodGet {
 			return true, nil
@@ -266,7 +266,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		}
 		managedDatabase := app.Databases[app.ManagedTokens.Database]
 		if managedDatabase == nil {
-			return false, fmt.Errorf("database %v not found", app.ManagedTokens.Database)
+			return false, fmt.Errorf("database %s not found", app.ManagedTokens.Database)
 		}
 		tokenDB, err := managedDatabase.GetConn()
 		if err != nil {
@@ -320,10 +320,14 @@ func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objec
 			}
 		}
 	}
-	return false, fmt.Errorf("access token not allowed for database %v and object %v", databaseId, objectId)
+	return false, fmt.Errorf("access token not allowed for database %s and object %s", databaseId, objectId)
 }
 
-func runTable(method string, database *Database, table *Table, dataId any, params map[string]any) (any, error) {
+func runTable(method string, database *Database, table *Table, dataId string, params map[string]any) (any, error) {
+	sqlSafe(&dataId)
+	if table.PrimaryKey == "" {
+		table.PrimaryKey = "ID"
+	}
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
@@ -374,7 +378,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			}
 			orderbyClause := ""
 			if orderBy != nil && orderBy != "" {
-				orderbyClause = fmt.Sprintf("ORDER BY %v", orderBy)
+				orderbyClause = fmt.Sprintf("ORDER BY %s", orderBy)
 			}
 
 			if database.Type == "sqlserver" {
@@ -398,7 +402,7 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 			}
 			sqlSafe(&columns)
 
-			q := fmt.Sprintf(`SELECT %s FROM %v WHERE 1=1 %s %s %s`, columns, table.Name, where, orderbyClause, limitClause)
+			q := fmt.Sprintf(`SELECT %s FROM %s WHERE 1=1 %s %s %s`, columns, table.Name, where, orderbyClause, limitClause)
 			data, err := gosqljson.QueryToMaps(db, gosqljson.Lower, q, values...)
 			if err != nil {
 				return nil, err
@@ -448,7 +452,8 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 				return data, nil
 			}
 		} else {
-			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %v WHERE id=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
+			placeholder := database.GetPlaceHolder(0)
+			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 			if err != nil {
 				return nil, err
 			}
@@ -463,17 +468,20 @@ func runTable(method string, database *Database, table *Table, dataId any, param
 		if err != nil {
 			return nil, err
 		}
-		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %v (%v) VALUES (%v)`, table.Name, keys, qms), values...)
+		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table.Name, keys, qms), values...)
 	case http.MethodPut:
-		set, values, err := mapForSqlUpdate(params, database.GetPlaceHolder)
+		setClause, values, err := mapForSqlUpdate(params, database.GetPlaceHolder)
 		if err != nil {
 			return nil, err
 		}
-		return gosqljson.Exec(db, fmt.Sprintf(`UPDATE %v SET %v WHERE ID=%v`, table.Name, set, database.GetPlaceHolder(len(params))), append(values, dataId)...)
+		placeholder := database.GetPlaceHolder(len(params))
+		values = append(values, dataId)
+		return gosqljson.Exec(db, fmt.Sprintf(`UPDATE %s SET %s WHERE %s=%s`, table.Name, setClause, table.PrimaryKey, placeholder), values...)
 	case http.MethodDelete:
-		return gosqljson.Exec(db, fmt.Sprintf(`DELETE FROM %v WHERE ID=%v`, table.Name, database.GetPlaceHolder(0)), dataId)
+		placeholder := database.GetPlaceHolder(0)
+		return gosqljson.Exec(db, fmt.Sprintf(`DELETE FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 	}
-	return nil, fmt.Errorf("Method %v not supported.", method)
+	return nil, fmt.Errorf("Method %s not supported.", method)
 }
 
 func runExec(database *Database, script *Script, params map[string]any, r *http.Request) (any, error) {
@@ -503,7 +511,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 				sqlParams = append(sqlParams, val)
 			} else {
 				tx.Rollback()
-				return nil, fmt.Errorf("Parameter %v not provided.", param)
+				return nil, fmt.Errorf("Parameter %s not provided.", param)
 			}
 		}
 

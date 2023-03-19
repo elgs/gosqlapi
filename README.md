@@ -159,6 +159,22 @@ $ curl -X DELETE 'http://localhost:8080/test_db/test_table/4'
 {"last_insert_id":4,"rows_affected":1}
 ```
 
+#### Primary Key
+
+If the table's primary key is not `ID`, you can specify the primary key for a table in the `gosqlapi.json` file:
+
+```json
+{
+  "tables": {
+    "test_table": {
+      "database": "test_db",
+      "name": "TEST_TABLE",
+      "primary_key": "UID"
+    }
+  }
+}
+```
+
 #### Search for records
 
 ```bash
