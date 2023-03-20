@@ -303,7 +303,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 
 func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
 	for _, access := range *accesses {
-		if access.TargetDatabase == databaseId && Contains(access.TargetObjectArray, objectId) {
+		if (access.TargetDatabase == databaseId || access.TargetDatabase == "*") && (Contains(access.TargetObjectArray, objectId) || Contains(access.TargetObjectArray, "*")) {
 			switch methodUpper {
 			case http.MethodPatch:
 				if access.ExecPrivate {
