@@ -264,6 +264,30 @@ Simple tokens are configured in `gosqlapi.json`:
 
 In the example above, the auth token is configured to allow users to read and write `test_table` and execute `init` script in `test_db`.
 
+You can use `*` to match all databases or all target objects:
+
+```json
+{
+  "tokens": {
+    "401d2fe0a18b26b4ce5f16c76cca6d484707f70a3a804d1c2f5e3fa1971d2fc0": [
+      {
+        "target_database": "*",
+        "target_objects": ["*"],
+        "read_private": true,
+        "write_private": true
+      },
+      {
+        "target_database": "*",
+        "target_objects": ["*"],
+        "exec_private": true
+      }
+    ]
+  }
+}
+```
+
+This token will have super power.
+
 ### Managed Tokens
 
 #### Token Table
