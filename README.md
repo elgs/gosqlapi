@@ -274,11 +274,7 @@ You can use `*` to match all databases or all target objects:
         "target_database": "*",
         "target_objects": ["*"],
         "read_private": true,
-        "write_private": true
-      },
-      {
-        "target_database": "*",
-        "target_objects": ["*"],
+        "write_private": true,
         "exec_private": true
       }
     ]
