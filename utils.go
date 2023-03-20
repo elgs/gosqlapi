@@ -140,8 +140,6 @@ func BuildStatements(script *Script, GetPlaceHolder func(index int) string) erro
 
 	index := 0
 	for _, statementString := range statements {
-		fmt.Println("***********************************")
-		fmt.Println(statementString)
 		statementString = strings.TrimSpace(statementString)
 		if statementString == "" {
 			continue
