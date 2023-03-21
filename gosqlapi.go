@@ -60,7 +60,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	authorized, err := authorize(methodUpper, authHeader, databaseId, objectId)
 	if !authorized {
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
