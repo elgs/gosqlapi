@@ -166,4 +166,28 @@ func (this *APITestSuite) TestAPI() {
 	this.Assert().Equal("Beta", string(respBody6["data"].([]interface{})[0].(map[string]interface{})["name"].(string)))
 	this.Assert().Equal("Gamma", string(respBody6["data"].([]interface{})[1].(map[string]interface{})["name"].(string)))
 
+	// get without auth token and get 401
+	resp, err = http.Get(this.baseURL + "test_db/token_table/")
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
+
+	// get with bad auth token and get 401
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "bad_token")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
+
+	// get with auth token and get 200
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "1234567890")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
+
 }
