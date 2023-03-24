@@ -539,6 +539,27 @@ https://github.com/microsoft/go-mssqldb
 }
 ```
 
+### Store passwords in environment variables
+
+If you don't want to expose the database password in the `gosqlapi.json` file, you can store the password in an environment variable and reference the environment variable in the `gosqlapi.json` file with `env:`. For example:
+
+```json
+{
+  "databases": {
+    "test_db": {
+      "type": "env:db_type",
+      "url": "env:db_url"
+    }
+  }
+}
+```
+
+The environment variables `db_type` and `db_url` will be used to configure the database.
+
+```bash
+$ db_type=sqlite db_url=./test_db.sqlite3 gosqlapi
+```
+
 https://github.com/sijms/go-ora
 
 ## HTTPS
