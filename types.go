@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 )
 
 type App struct {
@@ -40,6 +42,14 @@ func (this *Database) GetConn() (*sql.DB, error) {
 		return this.Conn, nil
 	}
 	var err error
+	if strings.HasPrefix(this.Type, "env:") {
+		env := strings.TrimPrefix(this.Type, "env:")
+		this.Type = os.Getenv(env)
+	}
+	if strings.HasPrefix(this.Url, "env:") {
+		env := strings.TrimPrefix(this.Url, "env:")
+		this.Url = os.Getenv(env)
+	}
 	this.Conn, err = sql.Open(this.Type, this.Url)
 	return this.Conn, err
 }
