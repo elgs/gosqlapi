@@ -324,6 +324,7 @@ func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objec
 }
 
 func runTable(method string, database *Database, table *Table, dataId string, params map[string]any) (any, error) {
+	sqlSafe(&table.Name)
 	sqlSafe(&dataId)
 	if table.PrimaryKey == "" {
 		table.PrimaryKey = "ID"
@@ -387,7 +388,6 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				}
 			}
 
-			sqlSafe(&table.Name)
 			sqlSafe(&limitClause)
 			sqlSafe(&orderbyClause)
 
