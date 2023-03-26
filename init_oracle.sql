@@ -28,5 +28,9 @@ create TABLE TOKENS (
 create INDEX TOKEN_INDEX ON TOKENS (TOKEN);
 
 insert INTO 
-TOKENS (ID, TOKEN,        TARGET_DATABASE,  TARGET_OBJECTS, READ_PRIVATE, WRITE_PRIVATE,  EXEC_PRIVATE)
-VALUES (1,  '1234567890', 'test_db',        'token_table',  1,            0,              0);
+TOKENS (ID, TOKEN,        TARGET_DATABASE,  TARGET_OBJECTS,   READ_PRIVATE, WRITE_PRIVATE,  EXEC_PRIVATE)
+VALUES (1,  '1234567890', 'test_db',        'token_table',    1,            0,              0);
+
+insert INTO 
+TOKENS (ID, TOKEN,        TARGET_DATABASE,  TARGET_OBJECTS,   READ_PRIVATE, WRITE_PRIVATE,  EXEC_PRIVATE)
+VALUES (2,  '0987654321', 'test_db',        'metadata', 0,            0,              1);

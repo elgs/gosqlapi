@@ -138,7 +138,6 @@ func BuildStatements(script *Script, GetPlaceHolder func(index int) string) erro
 		return err
 	}
 
-	index := 0
 	for _, statementString := range statements {
 		statementString = strings.TrimSpace(statementString)
 		if statementString == "" {
@@ -148,12 +147,8 @@ func BuildStatements(script *Script, GetPlaceHolder func(index int) string) erro
 		if statementSQL == "" {
 			continue
 		}
-		if label == "" {
-			label = fmt.Sprint(index)
-		}
 		params := ExtractSQLParameters(&statementSQL, GetPlaceHolder)
 		statement := &Statement{
-			Index:  index,
 			Label:  label,
 			SQL:    statementSQL,
 			Params: params,
@@ -162,7 +157,6 @@ func BuildStatements(script *Script, GetPlaceHolder func(index int) string) erro
 			Export: ShouldExport(statementSQL),
 		}
 		script.Statements = append(script.Statements, statement)
-		index++
 	}
 	script.built = true
 	return nil
