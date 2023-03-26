@@ -65,12 +65,22 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := io.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		return
+	}
 	defer r.Body.Close()
 	var bodyData map[string]any
 	json.Unmarshal(body, &bodyData)
 
-	paramValues, _ := url.ParseQuery(r.URL.RawQuery)
+	paramValues, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		return
+	}
 	params := valuesToMap(false, paramValues)
 	for k, v := range bodyData {
 		params[k] = v
