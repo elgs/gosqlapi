@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -15,6 +16,7 @@ type APITestSuite struct {
 	suite.Suite
 	baseURL string
 	config  string
+	app     *App
 }
 
 func TestAPITestSuite(t *testing.T) {
@@ -25,7 +27,7 @@ func TestAPITestSuite(t *testing.T) {
 		// "./tests/pgx.json",
 		// "./tests/sqlserver.json",
 
-		// "./tests/oracle.json",  // need to take care of the IF EXISTS and IF NOT EXISTS in init.sql
+		// "./tests/oracle.json", // need to take care of the IF EXISTS and IF NOT EXISTS in init.sql
 		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
@@ -40,11 +42,15 @@ func TestAPITestSuite(t *testing.T) {
 
 func (this *APITestSuite) SetupSuite() {
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-	go run(this.config)
+	confBytes, err := os.ReadFile(this.config)
+	this.Nil(err)
+	this.app, err = NewApp(confBytes)
+	this.Nil(err)
+	go this.app.run()
 }
 
 func (this *APITestSuite) TearDownSuite() {
-	shutdown()
+	this.app.shutdown()
 	fmt.Println("-------------------------------------------------------------")
 }
 
