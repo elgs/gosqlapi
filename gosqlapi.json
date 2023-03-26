@@ -14,6 +14,10 @@
       "database": "test_db",
       "path": "init.sql",
       "public_exec": true
+    },
+    "metadata": {
+      "database": "test_db",
+      "path": "metadata.sql"
     }
   },
   "tables": {
