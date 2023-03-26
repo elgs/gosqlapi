@@ -55,7 +55,6 @@ type ManagedTokens struct {
 }
 
 type Statement struct {
-	Index  int
 	Label  string
 	SQL    string
 	Params []string
