@@ -649,8 +649,8 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 		return nil, nil
 	}
 	if len(exportedResults) == 1 {
-		for _, v := range exportedResults {
-			return v, nil
+		if exportedResult, ok := exportedResults[""]; ok {
+			return exportedResult, nil
 		}
 	}
 	return exportedResults, nil
