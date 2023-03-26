@@ -2,23 +2,18 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
-	"strings"
 )
 
 type App struct {
-	Web             *Web                  `json:"web"`
-	Databases       map[string]*Database  `json:"databases"`
-	Scripts         map[string]*Script    `json:"scripts"`
-	Tables          map[string]*Table     `json:"tables"`
-	Tokens          map[string]*[]*Access `json:"tokens"`
-	ManagedTokens   *ManagedTokens        `json:"managed_tokens"`
-	DefaultPageSize int                   `json:"default_page_size"`
-	CacheTokens     bool                  `json:"cache_tokens"`
-	tokenCache      map[string]*[]*Access
+	Web           *Web                  `json:"web"`
+	Databases     map[string]*Database  `json:"databases"`
+	Scripts       map[string]*Script    `json:"scripts"`
+	Tables        map[string]*Table     `json:"tables"`
+	Tokens        map[string]*[]*Access `json:"tokens"`
+	ManagedTokens *ManagedTokens        `json:"managed_tokens"`
+	CacheTokens   bool                  `json:"cache_tokens"`
+	tokenCache    map[string]*[]*Access
 }
 
 type Web struct {
@@ -35,45 +30,6 @@ type Database struct {
 	Type string `json:"type"`
 	Url  string `json:"url"`
 	Conn *sql.DB
-}
-
-func (this *Database) GetConn() (*sql.DB, error) {
-	if this.Conn != nil {
-		return this.Conn, nil
-	}
-	var err error
-	if strings.HasPrefix(this.Type, "env:") {
-		env := strings.TrimPrefix(this.Type, "env:")
-		this.Type = os.Getenv(env)
-	}
-	if strings.HasPrefix(this.Url, "env:") {
-		env := strings.TrimPrefix(this.Url, "env:")
-		this.Url = os.Getenv(env)
-	}
-	this.Conn, err = sql.Open(this.Type, this.Url)
-	return this.Conn, err
-}
-
-func (this *Database) GetPlaceHolder(index int) string {
-	if this.Type == "pgx" {
-		return fmt.Sprintf("$%d", index+1)
-	} else if this.Type == "sqlserver" {
-		return fmt.Sprintf("@p%d", index+1)
-	} else if this.Type == "oracle" {
-		return fmt.Sprintf(":%d", index+1)
-	} else {
-		return "?"
-	}
-}
-
-func (this *Database) GetLimitClause(limit int, offset int) string {
-	switch this.Type {
-	case "pgx", "mysql", "sqlite3", "sqlite":
-		return fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
-	case "sqlserver", "oracle":
-		return fmt.Sprintf("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit)
-	}
-	return ""
 }
 
 type Access struct {
@@ -127,10 +83,4 @@ type Table struct {
 	PageSize        int      `json:"page_size"`
 	OrderBy         string   `json:"order_by"`
 	ShowTotal       bool     `json:"show_total"`
-}
-
-func NewApp(confBytes []byte) (*App, error) {
-	var app *App
-	err := json.Unmarshal(confBytes, &app)
-	return app, err
 }
