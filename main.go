@@ -13,9 +13,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-var app *App
-
-const version = "25"
+const version = "26"
 
 func main() {
 	v := flag.Bool("v", false, "prints version")
@@ -25,66 +23,61 @@ func main() {
 		fmt.Println(version)
 		os.Exit(0)
 	}
-	run(*confPath)
+	confBytes, err := os.ReadFile(*confPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	app, err := NewApp(confBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	app.run()
 }
 
-func run(confPath string) {
-	confBytes, err := os.ReadFile(confPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	app, err = NewApp(confBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = buildTokenQuery()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func (this *App) run() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", defaultHandler)
+	mux.HandleFunc("/", this.defaultHandler)
 
-	if app.Web.HttpAddr != "" {
-		app.Web.httpServer = &http.Server{
-			Addr:    app.Web.HttpAddr,
+	if this.Web.HttpAddr != "" {
+		this.Web.httpServer = &http.Server{
+			Addr:    this.Web.HttpAddr,
 			Handler: mux,
 		}
 		go func() {
-			err = app.Web.httpServer.ListenAndServe()
+			err := this.Web.httpServer.ListenAndServe()
 			if err != nil {
-				log.Printf("http://%s/ %v\n", app.Web.HttpAddr, err)
+				log.Printf("http://%s/ %v\n", this.Web.HttpAddr, err)
 			}
 		}()
-		log.Printf("Listening on http://%s/\n", app.Web.HttpAddr)
+		log.Printf("Listening on http://%s/\n", this.Web.HttpAddr)
 	}
 
-	if app.Web.HttpsAddr != "" {
-		app.Web.httpsServer = &http.Server{
-			Addr:    app.Web.HttpsAddr,
+	if this.Web.HttpsAddr != "" {
+		this.Web.httpsServer = &http.Server{
+			Addr:    this.Web.HttpsAddr,
 			Handler: mux,
 		}
 		go func() {
-			err = app.Web.httpsServer.ListenAndServeTLS(app.Web.CertFile, app.Web.KeyFile)
+			err := this.Web.httpsServer.ListenAndServeTLS(this.Web.CertFile, this.Web.KeyFile)
 			if err != nil {
-				log.Printf("https://%s/ %v\n", app.Web.HttpsAddr, err)
+				log.Printf("https://%s/ %v\n", this.Web.HttpsAddr, err)
 			}
 		}()
-		log.Printf("Listening on https://%s/\n", app.Web.HttpsAddr)
+		log.Printf("Listening on https://%s/\n", this.Web.HttpsAddr)
 	}
 
 	Hook(func() {
-		shutdown()
+		this.shutdown()
 	})
 
 }
 
-func shutdown() {
-	if app.Web.httpServer != nil {
-		app.Web.httpServer.Shutdown(context.Background())
+func (this *App) shutdown() {
+	if this.Web.httpServer != nil {
+		this.Web.httpServer.Shutdown(context.Background())
 	}
-	if app.Web.httpsServer != nil {
-		app.Web.httpsServer.Shutdown(context.Background())
+	if this.Web.httpsServer != nil {
+		this.Web.httpsServer.Shutdown(context.Background())
 	}
 }
 
