@@ -10,14 +10,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elgs/gosplitargs"
 	"github.com/elgs/gosqljson"
 )
 
 var format = "json"
 
-func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	if app.Web.Cors {
+func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
+	if this.Web.Cors {
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", r.Header.Get("Access-Control-Request-Method"))
@@ -41,14 +40,14 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	urlParts := strings.Split(r.URL.Path[1:], "/")
 	databaseId := urlParts[0]
 
-	if app.CacheTokens && databaseId == ".clear-tokens" && authHeader != "" {
-		delete(app.tokenCache, authHeader)
+	if this.CacheTokens && databaseId == ".clear-tokens" && authHeader != "" {
+		delete(this.tokenCache, authHeader)
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success":"token cleared"}`)
 		return
 	}
 
-	database := app.Databases[databaseId]
+	database := this.Databases[databaseId]
 	if database == nil {
 		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintf(w, `{"error":"database %s not found"}`, urlParts[0])
@@ -58,7 +57,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	methodUpper := strings.ToUpper(r.Method)
 
-	authorized, err := authorize(methodUpper, authHeader, databaseId, objectId)
+	authorized, err := this.authorize(methodUpper, authHeader, databaseId, objectId)
 	if !authorized {
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
@@ -89,7 +88,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	var result any
 
 	if methodUpper == http.MethodPatch {
-		script := app.Scripts[objectId]
+		script := this.Scripts[objectId]
 		if script == nil {
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, `{"error":"script %s not found"}`, objectId)
@@ -125,7 +124,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 				return
 			}
-			app.Scripts[objectId] = script
+			this.Scripts[objectId] = script
 		}
 
 		result, err = runExec(database, script, params, r)
@@ -139,7 +138,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		if len(urlParts) > 2 {
 			dataId = urlParts[2]
 		}
-		table := app.Tables[objectId]
+		table := this.Tables[objectId]
 		if table == nil {
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, `{"error":"table %s not found"}`, objectId)
@@ -172,84 +171,14 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, jsonString)
 }
 
-func buildTokenQuery() error {
-	if app.ManagedTokens == nil {
-		return nil
-	}
-	if app.ManagedTokens.QueryPath != "" {
-		tokenQuery, err := os.ReadFile(app.ManagedTokens.QueryPath)
-		if err != nil {
-			return err
-		}
-		app.ManagedTokens.Query = string(tokenQuery)
-		app.ManagedTokens.QueryPath = ""
-	}
-
-	if app.ManagedTokens.Query == "" {
-
-		if app.ManagedTokens.TableName == "" {
-			app.ManagedTokens.TableName = "TOKENS"
-		}
-		if app.ManagedTokens.Token == "" {
-			app.ManagedTokens.Token = "TOKEN"
-		}
-		if app.ManagedTokens.TargetDatabase == "" {
-			app.ManagedTokens.TargetDatabase = "TARGET_DATABASE"
-		}
-		if app.ManagedTokens.TargetObjects == "" {
-			app.ManagedTokens.TargetObjects = "TARGET_OBJECTS"
-		}
-		if app.ManagedTokens.ReadPrivate == "" {
-			app.ManagedTokens.ReadPrivate = "READ_PRIVATE"
-		}
-		if app.ManagedTokens.WritePrivate == "" {
-			app.ManagedTokens.WritePrivate = "WRITE_PRIVATE"
-		}
-		if app.ManagedTokens.ExecPrivate == "" {
-			app.ManagedTokens.ExecPrivate = "EXEC_PRIVATE"
-		}
-
-		app.ManagedTokens.Query = fmt.Sprintf(`SELECT 
-	%s AS "target_database",
-	%s AS "target_objects",
-	%s AS "read_private",
-	%s AS "write_private",
-	%s AS "exec_private"
-	FROM %s WHERE %s=?token?`,
-			app.ManagedTokens.TargetDatabase,
-			app.ManagedTokens.TargetObjects,
-			app.ManagedTokens.ReadPrivate,
-			app.ManagedTokens.WritePrivate,
-			app.ManagedTokens.ExecPrivate,
-			app.ManagedTokens.TableName,
-			app.ManagedTokens.Token)
-	}
-	tokenDb := app.Databases[app.ManagedTokens.Database]
-	if tokenDb == nil {
-		return fmt.Errorf("database %s not found", app.ManagedTokens.Database)
-	}
-	placeholder := tokenDb.GetPlaceHolder(0)
-	app.ManagedTokens.Query = strings.ReplaceAll(app.ManagedTokens.Query, "?token?", placeholder)
-	qs, err := gosplitargs.SplitSQL(app.ManagedTokens.Query, ";", true)
-	if err != nil {
-		return err
-	}
-	if len(qs) == 0 {
-		return fmt.Errorf("no query found")
-	}
-	app.ManagedTokens.Query = qs[0]
-	sqlSafe(&app.ManagedTokens.Query)
-	return nil
-}
-
-func authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
+func (this *App) authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
 
 	// if object is not found, return false
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
 	if methodUpper == http.MethodPatch {
-		script := app.Scripts[objectId]
+		script := this.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %s not found", objectId)
 		}
@@ -257,7 +186,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 			return true, nil
 		}
 	} else {
-		table := app.Tables[objectId]
+		table := this.Tables[objectId]
 		if table == nil || (table.Database != "" && table.Database != databaseId) {
 			return false, fmt.Errorf("table %s not found", objectId)
 		}
@@ -270,13 +199,13 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 	}
 
 	// managed tokens
-	if app.ManagedTokens != nil {
-		if x, ok := app.tokenCache[authHeader]; ok {
+	if this.ManagedTokens != nil {
+		if x, ok := this.tokenCache[authHeader]; ok {
 			return hasAccess(methodUpper, x, databaseId, objectId)
 		}
-		managedDatabase := app.Databases[app.ManagedTokens.Database]
+		managedDatabase := this.Databases[this.ManagedTokens.Database]
 		if managedDatabase == nil {
-			return false, fmt.Errorf("database %s not found", app.ManagedTokens.Database)
+			return false, fmt.Errorf("database %s not found", this.ManagedTokens.Database)
 		}
 		tokenDB, err := managedDatabase.GetConn()
 		if err != nil {
@@ -284,7 +213,7 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 		}
 
 		accesses := []Access{}
-		err = gosqljson.QueryToStructs(tokenDB, &accesses, app.ManagedTokens.Query, authHeader)
+		err = gosqljson.QueryToStructs(tokenDB, &accesses, this.ManagedTokens.Query, authHeader)
 		if err != nil {
 			return false, err
 		}
@@ -293,16 +222,16 @@ func authorize(methodUpper string, authHeader string, databaseId string, objectI
 			access.TargetObjectArray = strings.Fields(access.TargetObjects)
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
-		if app.tokenCache == nil {
-			app.tokenCache = make(map[string]*[]*Access)
+		if this.tokenCache == nil {
+			this.tokenCache = make(map[string]*[]*Access)
 		}
-		app.tokenCache[authHeader] = &x
+		this.tokenCache[authHeader] = &x
 		return hasAccess(methodUpper, &x, databaseId, objectId)
 	}
 
 	// object is not public, check token
 	// if token doesn't have any access, return false
-	accesses := app.Tokens[authHeader]
+	accesses := this.Tokens[authHeader]
 	if accesses == nil || len(*accesses) == 0 {
 		return false, fmt.Errorf("access denied")
 	} else {
@@ -360,9 +289,6 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 			if pageSize == 0 {
 				pageSize = table.PageSize
-			}
-			if pageSize == 0 {
-				pageSize = app.DefaultPageSize
 			}
 			if pageSize == 0 {
 				pageSize = 100
