@@ -7,8 +7,8 @@ github.com/elgs/gosqljson v0.0.0-20230312205433-ce9b7f463b84 h1:Abnr5sm2QcOOlga4
 github.com/elgs/gosqljson v0.0.0-20230312205433-ce9b7f463b84/go.mod h1:yiGjTv9QS1JB/s9dMPnG1Ck/eu7k7Q9rQUGh4rdlSkI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/sijms/go-ora/v2 v2.6.8 h1:aHuiQUWvk8+mn3iDx/4QNZvVZH18zexrbq4KoHoM5Ls=
-github.com/sijms/go-ora/v2 v2.6.8/go.mod h1:EHxlY6x7y9HAsdfumurRfTd+v8NrEOTR3Xl4FWlH6xk=
+github.com/sijms/go-ora/v2 v2.6.10 h1:15n+6SJ/LqxBPuiiq8WZ+TVVftE3hQNPrNcOMyz2NSU=
+github.com/sijms/go-ora/v2 v2.6.10/go.mod h1:EHxlY6x7y9HAsdfumurRfTd+v8NrEOTR3Xl4FWlH6xk=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
