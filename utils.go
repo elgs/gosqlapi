@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"unicode"
 
-	"github.com/elgs/gosplitargs"
+	"github.com/elgs/gosqlcrud"
 )
 
 // valuesToMap - convert url.Values to map[string]any
@@ -64,104 +64,6 @@ func SqlNormalize(sql *string) {
 	*sql = ret
 }
 
-func sqlSafe(s *string) {
-	*s = strings.Replace(*s, "'", "''", -1)
-	*s = strings.Replace(*s, "--", "", -1)
-}
-
-func mapForSqlInsert(m map[string]any, GetPlaceHolder func(index int) string) (placeholders string, keys string, values []any, err error) {
-	length := len(m)
-	if length == 0 {
-		return "", "", nil, fmt.Errorf("Empty parameter map")
-	}
-
-	for i := 0; i < length; i++ {
-		placeholders += GetPlaceHolder(i) + ","
-	}
-	placeholders = placeholders[:len(placeholders)-1]
-
-	values = make([]any, length)
-	i := 0
-	for k, v := range m {
-		keys += k + ","
-		values[i] = v
-		i++
-	}
-	keys = keys[:len(keys)-1]
-	sqlSafe(&keys)
-	return
-}
-
-func mapForSqlUpdate(m map[string]any, GetPlaceHolder func(index int) string) (set string, values []any, err error) {
-	sqlSafe(&set)
-	length := len(m)
-	if length == 0 {
-		return "", nil, fmt.Errorf("Empty parameter map")
-	}
-
-	values = make([]any, length)
-	i := 0
-	for k, v := range m {
-		set += fmt.Sprintf("%s=%s,", k, GetPlaceHolder(i))
-		values[i] = v
-		i++
-	}
-	set = set[:len(set)-1]
-	return
-}
-
-func mapForSqlWhere(m map[string]any, GetPlaceHolder func(index int) string) (where string, values []any, err error) {
-	length := len(m)
-	if length == 0 {
-		return
-	}
-
-	i := 0
-	for k, v := range m {
-		if strings.HasPrefix(k, ".") {
-			continue
-		}
-		where += fmt.Sprintf("AND %s=%s ", k, GetPlaceHolder(i))
-		values = append(values, v)
-		i++
-	}
-	where = strings.TrimSpace(where)
-	sqlSafe(&where)
-	return
-}
-
-func BuildStatements(script *Script, GetPlaceHolder func(index int) string) error {
-	script.Statements = nil
-	script.built = false
-	statements, err := gosplitargs.SplitSQL(script.SQL, ";", true)
-	if err != nil {
-		return err
-	}
-
-	for _, statementString := range statements {
-		statementString = strings.TrimSpace(statementString)
-		if statementString == "" {
-			continue
-		}
-		label, statementSQL := SplitSqlLabel(statementString)
-		if statementSQL == "" {
-			continue
-		}
-		params := ExtractSQLParameters(&statementSQL, GetPlaceHolder)
-		statement := &Statement{
-			Label:  label,
-			SQL:    statementSQL,
-			Params: params,
-			Script: script,
-			Query:  IsQuery(statementSQL),
-			Export: ShouldExport(statementSQL),
-		}
-		script.Statements = append(script.Statements, statement)
-	}
-	script.built = true
-	return nil
-}
-
 func SplitSqlLabel(sqlString string) (label string, s string) {
 	sqlString = strings.TrimSpace(sqlString) + "\n"
 	labelAndSql := strings.SplitN(sqlString, "\n", 2)
@@ -177,35 +79,13 @@ func SplitSqlLabel(sqlString string) (label string, s string) {
 	return "", strings.TrimSpace(sqlString)
 }
 
-func ExtractSQLParameters(s *string, GetPlaceHolder func(index int) string) []string {
-	params := []string{}
-	r := regexp.MustCompile(`\?(.+?)\?`)
-	m := r.FindAllStringSubmatch(*s, -1)
-	for _, v := range m {
-		if len(v) >= 2 {
-			params = append(params, v[1])
-		}
-	}
-	indexes := r.FindAllStringSubmatchIndex(*s, -1)
-	temp := []string{}
-	lastIndex := 0
-	for index, match := range indexes {
-		temp = append(temp, (*s)[lastIndex:match[0]])
-		temp = append(temp, GetPlaceHolder(index))
-		lastIndex = match[1]
-	}
-	temp = append(temp, (*s)[lastIndex:])
-	*s = strings.Join(temp, "")
-	return params
-}
-
 func ReplaceRequestParameters(s *string, r *http.Request) {
 	regex := regexp.MustCompile(`\!(.+?)\!`)
 	m := regex.FindAllStringSubmatch(*s, -1)
 	for _, v := range m {
 		if len(v) >= 2 {
 			replacement := GetMetaDataFromRequest(v[1], r)
-			sqlSafe(&replacement)
+			gosqlcrud.SqlSafe(&replacement)
 			*s = strings.ReplaceAll(*s, v[0], fmt.Sprintf("'%s'", replacement))
 		}
 	}
