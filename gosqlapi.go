@@ -10,11 +10,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/elgs/gosplitargs"
-	"github.com/elgs/gosqljson"
+	"github.com/elgs/gosqlcrud"
 )
 
 func NewApp(confBytes []byte) (*App, error) {
@@ -94,15 +95,15 @@ func (this *Database) GetConn() (*sql.DB, error) {
 	return this.Conn, err
 }
 
-func (this *Database) GetPlaceHolder(index int) string {
+func (this *Database) GetDbType() gosqlcrud.DbType {
 	if this.Type == "pgx" {
-		return fmt.Sprintf("$%d", index+1)
+		return gosqlcrud.PostgreSQL
 	} else if this.Type == "sqlserver" {
-		return fmt.Sprintf("@p%d", index+1)
+		return gosqlcrud.MSSQLServer
 	} else if this.Type == "oracle" {
-		return fmt.Sprintf(":%d", index+1)
+		return gosqlcrud.Oracle
 	} else {
-		return "?"
+		return gosqlcrud.MySQL
 	}
 }
 
@@ -114,6 +115,60 @@ func (this *Database) GetLimitClause(limit int, offset int) string {
 		return fmt.Sprintf("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit)
 	}
 	return ""
+}
+
+func (this *Database) BuildStatements(script *Script) error {
+	script.Statements = nil
+	script.built = false
+	statements, err := gosplitargs.SplitSQL(script.SQL, ";", true)
+	if err != nil {
+		return err
+	}
+
+	for _, statementString := range statements {
+		statementString = strings.TrimSpace(statementString)
+		if statementString == "" {
+			continue
+		}
+		label, statementSQL := SplitSqlLabel(statementString)
+		if statementSQL == "" {
+			continue
+		}
+		params := this.ExtractSQLParameters(&statementSQL)
+		statement := &Statement{
+			Label:  label,
+			SQL:    statementSQL,
+			Params: params,
+			Script: script,
+			Query:  IsQuery(statementSQL),
+			Export: ShouldExport(statementSQL),
+		}
+		script.Statements = append(script.Statements, statement)
+	}
+	script.built = true
+	return nil
+}
+
+func (this *Database) ExtractSQLParameters(s *string) []string {
+	params := []string{}
+	r := regexp.MustCompile(`\?(.+?)\?`)
+	m := r.FindAllStringSubmatch(*s, -1)
+	for _, v := range m {
+		if len(v) >= 2 {
+			params = append(params, v[1])
+		}
+	}
+	indexes := r.FindAllStringSubmatchIndex(*s, -1)
+	temp := []string{}
+	lastIndex := 0
+	for index, match := range indexes {
+		temp = append(temp, (*s)[lastIndex:match[0]])
+		temp = append(temp, gosqlcrud.GetPlaceHolder(index, this.GetDbType()))
+		lastIndex = match[1]
+	}
+	temp = append(temp, (*s)[lastIndex:])
+	*s = strings.Join(temp, "")
+	return params
 }
 
 func (this *App) buildTokenQuery() error {
@@ -172,7 +227,7 @@ func (this *App) buildTokenQuery() error {
 	if tokenDb == nil {
 		return fmt.Errorf("database %s not found", this.ManagedTokens.Database)
 	}
-	placeholder := tokenDb.GetPlaceHolder(0)
+	placeholder := gosqlcrud.GetPlaceHolder(0, tokenDb.GetDbType())
 	this.ManagedTokens.Query = strings.ReplaceAll(this.ManagedTokens.Query, "?token?", placeholder)
 	qs, err := gosplitargs.SplitSQL(this.ManagedTokens.Query, ";", true)
 	if err != nil {
@@ -182,7 +237,7 @@ func (this *App) buildTokenQuery() error {
 		return fmt.Errorf("no query found")
 	}
 	this.ManagedTokens.Query = qs[0]
-	sqlSafe(&this.ManagedTokens.Query)
+	gosqlcrud.SqlSafe(&this.ManagedTokens.Query)
 	return nil
 }
 
@@ -289,7 +344,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 				script.SQL = string(f)
 			}
 
-			err = BuildStatements(script, database.GetPlaceHolder)
+			err = database.BuildStatements(script)
 			if err != nil {
 				w.WriteHeader(http.StatusForbidden)
 				fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
@@ -384,7 +439,7 @@ func (this *App) authorize(methodUpper string, authHeader string, databaseId str
 		}
 
 		accesses := []Access{}
-		err = gosqljson.QueryToStructs(tokenDB, &accesses, this.ManagedTokens.Query, authHeader)
+		err = gosqlcrud.QueryToStructs(tokenDB, &accesses, this.ManagedTokens.Query, authHeader)
 		if err != nil {
 			return false, err
 		}
@@ -394,16 +449,16 @@ func (this *App) authorize(methodUpper string, authHeader string, databaseId str
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
 		if this.tokenCache == nil {
-			this.tokenCache = make(map[string]*[]*Access)
+			this.tokenCache = make(map[string][]*Access)
 		}
-		this.tokenCache[authHeader] = &x
-		return hasAccess(methodUpper, &x, databaseId, objectId)
+		this.tokenCache[authHeader] = x
+		return hasAccess(methodUpper, x, databaseId, objectId)
 	}
 
 	// object is not public, check token
 	// if token doesn't have any access, return false
 	accesses := this.Tokens[authHeader]
-	if accesses == nil || len(*accesses) == 0 {
+	if len(accesses) == 0 {
 		return false, fmt.Errorf("access denied")
 	} else {
 		// when token has access, check if any access is allowed for database and object
@@ -411,8 +466,8 @@ func (this *App) authorize(methodUpper string, authHeader string, databaseId str
 	}
 }
 
-func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objectId string) (bool, error) {
-	for _, access := range *accesses {
+func hasAccess(methodUpper string, accesses []*Access, databaseId string, objectId string) (bool, error) {
+	for _, access := range accesses {
 		if (access.TargetDatabase == databaseId || access.TargetDatabase == "*") && (Contains(access.TargetObjectArray, objectId) || Contains(access.TargetObjectArray, "*")) {
 			switch methodUpper {
 			case http.MethodPatch:
@@ -434,8 +489,8 @@ func hasAccess(methodUpper string, accesses *[]*Access, databaseId string, objec
 }
 
 func runTable(method string, database *Database, table *Table, dataId string, params map[string]any) (any, error) {
-	sqlSafe(&table.Name)
-	sqlSafe(&dataId)
+	gosqlcrud.SqlSafe(&table.Name)
+	gosqlcrud.SqlSafe(&dataId)
 	if table.PrimaryKey == "" {
 		table.PrimaryKey = "ID"
 	}
@@ -495,10 +550,10 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				}
 			}
 
-			sqlSafe(&limitClause)
-			sqlSafe(&orderbyClause)
+			gosqlcrud.SqlSafe(&limitClause)
+			gosqlcrud.SqlSafe(&orderbyClause)
 
-			where, values, err := mapForSqlWhere(params, database.GetPlaceHolder)
+			where, values, err := gosqlcrud.MapForSqlWhere(params, 0, database.GetDbType())
 			if err != nil {
 				return nil, err
 			}
@@ -507,10 +562,10 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			if table.ExportedColumns != nil && len(table.ExportedColumns) > 0 {
 				columns = strings.Join(table.ExportedColumns, ", ")
 			}
-			sqlSafe(&columns)
+			gosqlcrud.SqlSafe(&columns)
 
 			q := fmt.Sprintf(`SELECT %s FROM %s WHERE 1=1 %s %s %s`, columns, table.Name, where, orderbyClause, limitClause)
-			data, err := gosqljson.QueryToMaps(db, gosqljson.Lower, q, values...)
+			data, err := gosqlcrud.QueryToMaps(db, gosqlcrud.Lower, q, values...)
 			if err != nil {
 				return nil, err
 			}
@@ -531,7 +586,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 
 			if showTotal {
 				qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %s WHERE 1=1 %s`, table.Name, where)
-				_total, err := gosqljson.QueryToMaps(db, gosqljson.Lower, qt, values...)
+				_total, err := gosqlcrud.QueryToMaps(db, gosqlcrud.Lower, qt, values...)
 				if err != nil {
 					return nil, err
 				}
@@ -559,8 +614,8 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				return data, nil
 			}
 		} else {
-			placeholder := database.GetPlaceHolder(0)
-			r, err := gosqljson.QueryToMaps(db, gosqljson.Lower, fmt.Sprintf(`SELECT * FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
+			placeholder := gosqlcrud.GetPlaceHolder(0, database.GetDbType())
+			r, err := gosqlcrud.QueryToMaps(db, gosqlcrud.Lower, fmt.Sprintf(`SELECT * FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 			if err != nil {
 				return nil, err
 			}
@@ -571,22 +626,22 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 		}
 	case http.MethodPost:
-		qms, keys, values, err := mapForSqlInsert(params, database.GetPlaceHolder)
+		qms, keys, values, err := gosqlcrud.MapForSqlInsert(params, database.GetDbType())
 		if err != nil {
 			return nil, err
 		}
-		return gosqljson.Exec(db, fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table.Name, keys, qms), values...)
+		return gosqlcrud.Exec(db, fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table.Name, keys, qms), values...)
 	case http.MethodPut:
-		setClause, values, err := mapForSqlUpdate(params, database.GetPlaceHolder)
+		setClause, values, err := gosqlcrud.MapForSqlUpdate(params, database.GetDbType())
 		if err != nil {
 			return nil, err
 		}
-		placeholder := database.GetPlaceHolder(len(params))
+		placeholder := gosqlcrud.GetPlaceHolder(len(params), database.GetDbType())
 		values = append(values, dataId)
-		return gosqljson.Exec(db, fmt.Sprintf(`UPDATE %s SET %s WHERE %s=%s`, table.Name, setClause, table.PrimaryKey, placeholder), values...)
+		return gosqlcrud.Exec(db, fmt.Sprintf(`UPDATE %s SET %s WHERE %s=%s`, table.Name, setClause, table.PrimaryKey, placeholder), values...)
 	case http.MethodDelete:
-		placeholder := database.GetPlaceHolder(0)
-		return gosqljson.Exec(db, fmt.Sprintf(`DELETE FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
+		placeholder := gosqlcrud.GetPlaceHolder(0, database.GetDbType())
+		return gosqlcrud.Exec(db, fmt.Sprintf(`DELETE FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 	}
 	return nil, fmt.Errorf("Method %s not supported.", method)
 }
@@ -623,7 +678,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 		}
 
 		if statement.Query {
-			result, err = gosqljson.QueryToMaps(tx, gosqljson.Lower, statementSQL, sqlParams...)
+			result, err = gosqlcrud.QueryToMaps(tx, gosqlcrud.Lower, statementSQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err
@@ -632,7 +687,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 				exportedResults[statement.Label] = result
 			}
 		} else {
-			result, err = gosqljson.Exec(tx, statementSQL, sqlParams...)
+			result, err = gosqlcrud.Exec(tx, statementSQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err

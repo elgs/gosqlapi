@@ -6,14 +6,14 @@ import (
 )
 
 type App struct {
-	Web           *Web                  `json:"web"`
-	Databases     map[string]*Database  `json:"databases"`
-	Scripts       map[string]*Script    `json:"scripts"`
-	Tables        map[string]*Table     `json:"tables"`
-	Tokens        map[string]*[]*Access `json:"tokens"`
-	ManagedTokens *ManagedTokens        `json:"managed_tokens"`
-	CacheTokens   bool                  `json:"cache_tokens"`
-	tokenCache    map[string]*[]*Access
+	Web           *Web                 `json:"web"`
+	Databases     map[string]*Database `json:"databases"`
+	Scripts       map[string]*Script   `json:"scripts"`
+	Tables        map[string]*Table    `json:"tables"`
+	Tokens        map[string][]*Access `json:"tokens"`
+	ManagedTokens *ManagedTokens       `json:"managed_tokens"`
+	CacheTokens   bool                 `json:"cache_tokens"`
+	tokenCache    map[string][]*Access
 }
 
 type Web struct {
