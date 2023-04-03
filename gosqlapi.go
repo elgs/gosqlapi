@@ -254,6 +254,12 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if this.Web.HttpHeaders != nil {
+		for k, v := range this.Web.HttpHeaders {
+			w.Header().Set(k, v)
+		}
+	}
+
 	w.Header().Set("gosqlapi-server-version", version)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
