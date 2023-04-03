@@ -3,6 +3,7 @@
 declare -a branches=(
     "all"
     "mysql" 
+    "pq",
     "pgx"
     "sqlite"
     "sqlite3"
