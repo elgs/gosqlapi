@@ -22,12 +22,12 @@ type APITestSuite struct {
 func TestAPITestSuite(t *testing.T) {
 	configs := []string{
 		"./gosqlapi.json",
-		// "./tests/mysql.json",
-		// "./tests/pgx.json",
-		// "./tests/pq.json",
-		// "./tests/sqlserver.json",
-		// "./tests/oracle.json",
-		// "./tests/sqlite.json",
+		"./tests/mysql.json",
+		"./tests/pgx.json",
+		"./tests/postgres.json",
+		"./tests/sqlserver.json",
+		"./tests/oracle.json",
+		"./tests/sqlite.json",
 		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
