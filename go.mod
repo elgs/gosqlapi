@@ -7,7 +7,7 @@ go 1.20
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
-	github.com/elgs/gosqlcrud v0.0.0-20230403014717-415b71411185
+	github.com/elgs/gosqlcrud v0.0.0-20230403074444-af3efb77de9d
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/lib/pq v1.10.7

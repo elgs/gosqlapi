@@ -1,0 +1,43 @@
+{
+  "web": {
+    "http_addr": "127.0.0.1:8080",
+    "cors": true,
+    "http_headers": {
+      "abc": "123"
+    }
+  },
+  "databases": {
+    "test_db": {
+      "type": "mysql",
+      "url": "env:mariadb_url"
+    }
+  },
+  "scripts": {
+    "init": {
+      "database": "test_db",
+      "path": "tests/init.sql",
+      "public_exec": true
+    },
+    "metadata": {
+      "database": "test_db",
+      "path": "tests/metadata.sql"
+    }
+  },
+  "tables": {
+    "test_table": {
+      "database": "test_db",
+      "name": "TEST_TABLE",
+      "public_read": true,
+      "public_write": true
+    },
+    "token_table": {
+      "database": "test_db",
+      "name": "TOKENS"
+    }
+  },
+  "managed_tokens": {
+    "database": "test_db",
+    "query_path": "tests/token_query.sql"
+  },
+  "cache_tokens": true
+}

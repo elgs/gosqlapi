@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"net/http"
+
+	"github.com/elgs/gosqlcrud"
 )
 
 type App struct {
@@ -28,9 +30,10 @@ type Web struct {
 }
 
 type Database struct {
-	Type string `json:"type"`
-	Url  string `json:"url"`
-	Conn *sql.DB
+	Type   string `json:"type"`
+	Url    string `json:"url"`
+	dbType gosqlcrud.DbType
+	conn   *sql.DB
 }
 
 type Access struct {
