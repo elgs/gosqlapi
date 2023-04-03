@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 declare -a branches=(
-    "asdf"
+    "as"
     "all"
     "mysql" 
     "pq",
