@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
 declare -a branches=(
-    "as"
     "all"
     "mysql" 
-    "pq",
+    "postgres",
     "pgx"
     "sqlite"
     "sqlite3"
