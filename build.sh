@@ -7,6 +7,7 @@ rm -rf $build
 declare -a branches=(
     "all"
     "mysql" 
+    "pq",
     "pgx"
     "sqlite"
     "sqlserver"
