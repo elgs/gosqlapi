@@ -64,6 +64,7 @@ func (this *APITestSuite) TestAPI() {
 	resp, err := client.Do(req)
 	this.Nil(err)
 	defer resp.Body.Close()
+	this.Assert().Equal("123", resp.Header.Get("abc"))
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
 	body, err := io.ReadAll(resp.Body)
 	this.Nil(err)

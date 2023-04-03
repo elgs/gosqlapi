@@ -591,6 +591,22 @@ Here is an example of how to configure HTTPS:
 }
 ```
 
+## Custom HTTP Headers
+
+You can add custom HTTP headers to the response. For example, you can add the following to the `gosqlapi.json` file:
+
+```json
+{
+  "web": {
+    "http_addr": "127.0.0.1:8080",
+    "cors": false,
+    "http_headers": {
+      "Access-Control-Allow-Origin": "https://example.com"
+    }
+  }
+}
+```
+
 ## Auto start with systemd
 
 Create service unit file `/etc/systemd/system/gosqlapi.service` with the following content:
