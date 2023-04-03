@@ -17,11 +17,12 @@ type App struct {
 }
 
 type Web struct {
-	HttpAddr    string `json:"http_addr"`
-	HttpsAddr   string `json:"https_addr"`
-	CertFile    string `json:"cert_file"`
-	KeyFile     string `json:"key_file"`
-	Cors        bool   `json:"cors"`
+	HttpAddr    string            `json:"http_addr"`
+	HttpsAddr   string            `json:"https_addr"`
+	CertFile    string            `json:"cert_file"`
+	KeyFile     string            `json:"key_file"`
+	Cors        bool              `json:"cors"`
+	HttpHeaders map[string]string `json:"http_headers"`
 	httpServer  *http.Server
 	httpsServer *http.Server
 }
