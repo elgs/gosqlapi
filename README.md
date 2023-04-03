@@ -15,6 +15,9 @@ $ go install github.com/elgs/gosqlapi@all
 # Install gosqlapi for MySQL and MariaDB - https://github.com/go-sql-driver/mysql
 $ go install github.com/elgs/gosqlapi@mysql
 
+# Install gosqlapi for PostgreSQL - https://github.com/lib/pq
+$ go install github.com/elgs/gosqlapi@postgres
+
 # Install gosqlapi for PostgreSQL - https://github.com/jackc/pgx
 $ go install github.com/elgs/gosqlapi@pgx
 
