@@ -96,7 +96,7 @@ func (this *Database) GetConn() (*sql.DB, error) {
 }
 
 func (this *Database) GetDbType() gosqlcrud.DbType {
-	if this.Type == "pgx" {
+	if this.Type == "pgx" || this.Type == "postgres" {
 		return gosqlcrud.PostgreSQL
 	} else if this.Type == "sqlserver" {
 		return gosqlcrud.MSSQLServer
@@ -109,7 +109,7 @@ func (this *Database) GetDbType() gosqlcrud.DbType {
 
 func (this *Database) GetLimitClause(limit int, offset int) string {
 	switch this.Type {
-	case "pgx", "mysql", "sqlite3", "sqlite":
+	case "pgx", "postgres", "mysql", "sqlite3", "sqlite":
 		return fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
 	case "sqlserver", "oracle":
 		return fmt.Sprintf("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit)
@@ -565,7 +565,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			gosqlcrud.SqlSafe(&columns)
 
 			q := fmt.Sprintf(`SELECT %s FROM %s WHERE 1=1 %s %s %s`, columns, table.Name, where, orderbyClause, limitClause)
-			data, err := gosqlcrud.QueryToMaps(db, gosqlcrud.Lower, q, values...)
+			data, err := gosqlcrud.QueryToMaps(db, q, values...)
 			if err != nil {
 				return nil, err
 			}
@@ -586,7 +586,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 
 			if showTotal {
 				qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %s WHERE 1=1 %s`, table.Name, where)
-				_total, err := gosqlcrud.QueryToMaps(db, gosqlcrud.Lower, qt, values...)
+				_total, err := gosqlcrud.QueryToMaps(db, qt, values...)
 				if err != nil {
 					return nil, err
 				}
@@ -615,7 +615,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 		} else {
 			placeholder := gosqlcrud.GetPlaceHolder(0, database.GetDbType())
-			r, err := gosqlcrud.QueryToMaps(db, gosqlcrud.Lower, fmt.Sprintf(`SELECT * FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
+			r, err := gosqlcrud.QueryToMaps(db, fmt.Sprintf(`SELECT * FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 			if err != nil {
 				return nil, err
 			}
@@ -678,7 +678,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 		}
 
 		if statement.Query {
-			result, err = gosqlcrud.QueryToMaps(tx, gosqlcrud.Lower, statementSQL, sqlParams...)
+			result, err = gosqlcrud.QueryToMaps(tx, statementSQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err
