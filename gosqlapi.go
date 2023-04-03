@@ -78,9 +78,22 @@ func (this *App) shutdown() {
 	}
 }
 
+func (this *App) GetDatabase(databaseId string) (*Database, error) {
+	if database, ok := this.Databases[databaseId]; ok {
+		if database.dbType == gosqlcrud.Unknown {
+			_, err := database.GetConn()
+			if err != nil {
+				return nil, err
+			}
+		}
+		return database, nil
+	}
+	return nil, fmt.Errorf("database %s not found", databaseId)
+}
+
 func (this *Database) GetConn() (*sql.DB, error) {
-	if this.Conn != nil {
-		return this.Conn, nil
+	if this.conn != nil {
+		return this.conn, nil
 	}
 	var err error
 	if strings.HasPrefix(this.Type, "env:") {
@@ -91,27 +104,16 @@ func (this *Database) GetConn() (*sql.DB, error) {
 		env := strings.TrimPrefix(this.Url, "env:")
 		this.Url = os.Getenv(env)
 	}
-	this.Conn, err = sql.Open(this.Type, this.Url)
-	return this.Conn, err
-}
-
-func (this *Database) GetDbType() gosqlcrud.DbType {
-	if this.Type == "pgx" || this.Type == "postgres" {
-		return gosqlcrud.PostgreSQL
-	} else if this.Type == "sqlserver" {
-		return gosqlcrud.MSSQLServer
-	} else if this.Type == "oracle" {
-		return gosqlcrud.Oracle
-	} else {
-		return gosqlcrud.MySQL
-	}
+	this.conn, err = sql.Open(this.Type, this.Url)
+	this.dbType = gosqlcrud.GetDbType(this.conn)
+	return this.conn, err
 }
 
 func (this *Database) GetLimitClause(limit int, offset int) string {
-	switch this.Type {
-	case "pgx", "postgres", "mysql", "sqlite3", "sqlite":
+	switch this.dbType {
+	case gosqlcrud.PostgreSQL, gosqlcrud.MySQL, gosqlcrud.SQLite:
 		return fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
-	case "sqlserver", "oracle":
+	case gosqlcrud.SQLServer, gosqlcrud.Oracle:
 		return fmt.Sprintf("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit)
 	}
 	return ""
@@ -163,7 +165,7 @@ func (this *Database) ExtractSQLParameters(s *string) []string {
 	lastIndex := 0
 	for index, match := range indexes {
 		temp = append(temp, (*s)[lastIndex:match[0]])
-		temp = append(temp, gosqlcrud.GetPlaceHolder(index, this.GetDbType()))
+		temp = append(temp, gosqlcrud.GetPlaceHolder(index, this.dbType))
 		lastIndex = match[1]
 	}
 	temp = append(temp, (*s)[lastIndex:])
@@ -223,11 +225,11 @@ func (this *App) buildTokenQuery() error {
 			this.ManagedTokens.TableName,
 			this.ManagedTokens.Token)
 	}
-	tokenDb := this.Databases[this.ManagedTokens.Database]
-	if tokenDb == nil {
-		return fmt.Errorf("database %s not found", this.ManagedTokens.Database)
+	tokenDb, err := this.GetDatabase(this.ManagedTokens.Database)
+	if err != nil {
+		return err
 	}
-	placeholder := gosqlcrud.GetPlaceHolder(0, tokenDb.GetDbType())
+	placeholder := gosqlcrud.GetPlaceHolder(0, tokenDb.dbType)
 	this.ManagedTokens.Query = strings.ReplaceAll(this.ManagedTokens.Query, "?token?", placeholder)
 	qs, err := gosplitargs.SplitSQL(this.ManagedTokens.Query, ";", true)
 	if err != nil {
@@ -279,10 +281,10 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	database := this.Databases[databaseId]
-	if database == nil {
+	database, err := this.GetDatabase(databaseId)
+	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"database %s not found"}`, urlParts[0])
+		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
 	objectId := urlParts[1]
@@ -435,11 +437,11 @@ func (this *App) authorize(methodUpper string, authHeader string, databaseId str
 		if x, ok := this.tokenCache[authHeader]; ok {
 			return hasAccess(methodUpper, x, databaseId, objectId)
 		}
-		managedDatabase := this.Databases[this.ManagedTokens.Database]
-		if managedDatabase == nil {
-			return false, fmt.Errorf("database %s not found", this.ManagedTokens.Database)
+		managedTokensDatabase, err := this.GetDatabase(this.ManagedTokens.Database)
+		if err != nil {
+			return false, err
 		}
-		tokenDB, err := managedDatabase.GetConn()
+		tokenDB, err := managedTokensDatabase.GetConn()
 		if err != nil {
 			return false, err
 		}
@@ -559,7 +561,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			gosqlcrud.SqlSafe(&limitClause)
 			gosqlcrud.SqlSafe(&orderbyClause)
 
-			where, values, err := gosqlcrud.MapForSqlWhere(params, 0, database.GetDbType())
+			where, values, err := gosqlcrud.MapForSqlWhere(params, 0, database.dbType)
 			if err != nil {
 				return nil, err
 			}
@@ -620,7 +622,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				return data, nil
 			}
 		} else {
-			placeholder := gosqlcrud.GetPlaceHolder(0, database.GetDbType())
+			placeholder := gosqlcrud.GetPlaceHolder(0, database.dbType)
 			r, err := gosqlcrud.QueryToMaps(db, fmt.Sprintf(`SELECT * FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 			if err != nil {
 				return nil, err
@@ -632,21 +634,21 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 		}
 	case http.MethodPost:
-		qms, keys, values, err := gosqlcrud.MapForSqlInsert(params, database.GetDbType())
+		qms, keys, values, err := gosqlcrud.MapForSqlInsert(params, database.dbType)
 		if err != nil {
 			return nil, err
 		}
 		return gosqlcrud.Exec(db, fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table.Name, keys, qms), values...)
 	case http.MethodPut:
-		setClause, values, err := gosqlcrud.MapForSqlUpdate(params, database.GetDbType())
+		setClause, values, err := gosqlcrud.MapForSqlUpdate(params, database.dbType)
 		if err != nil {
 			return nil, err
 		}
-		placeholder := gosqlcrud.GetPlaceHolder(len(params), database.GetDbType())
+		placeholder := gosqlcrud.GetPlaceHolder(len(params), database.dbType)
 		values = append(values, dataId)
 		return gosqlcrud.Exec(db, fmt.Sprintf(`UPDATE %s SET %s WHERE %s=%s`, table.Name, setClause, table.PrimaryKey, placeholder), values...)
 	case http.MethodDelete:
-		placeholder := gosqlcrud.GetPlaceHolder(0, database.GetDbType())
+		placeholder := gosqlcrud.GetPlaceHolder(0, database.dbType)
 		return gosqlcrud.Exec(db, fmt.Sprintf(`DELETE FROM %s WHERE %s=%s`, table.Name, table.PrimaryKey, placeholder), dataId)
 	}
 	return nil, fmt.Errorf("Method %s not supported.", method)

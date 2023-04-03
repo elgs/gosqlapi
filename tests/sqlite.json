@@ -27,16 +27,12 @@
     "test_table": {
       "database": "test_db",
       "name": "TEST_TABLE",
-      "exported_columns": [
-        "NAME"
-      ],
       "public_read": true,
       "public_write": true
     },
     "token_table": {
       "database": "test_db",
-      "name": "TOKENS",
-      "show_total": true
+      "name": "TOKENS"
     }
   },
   "managed_tokens": {
