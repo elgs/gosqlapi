@@ -5,8 +5,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a h1:vO9yvZPJqJMJJsFdaD+sLkwjZfxzr/0fm22AnW8R6ms=
 github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a/go.mod h1:1zHirgOZTAY00iwXKAX0NsVKjwkwjSr1P+yqciHfRH0=
-github.com/elgs/gosqlcrud v0.0.0-20230401170233-082426276c32 h1:+Slopyh/Bu0Km5kLs9UmoH4D7mcdrJ/LTOb4hKn1ocI=
-github.com/elgs/gosqlcrud v0.0.0-20230401170233-082426276c32/go.mod h1:RaJ1Deq3R7NZjjL4JjVZbHKcFQeh8OIdV7fsxLJedl0=
+github.com/elgs/gosqlcrud v0.0.0-20230403014717-415b71411185 h1:H5fuYXjcYAtKymnh/oxjNgaaqAtSnEni/cWKW9RMJOM=
+github.com/elgs/gosqlcrud v0.0.0-20230403014717-415b71411185/go.mod h1:RaJ1Deq3R7NZjjL4JjVZbHKcFQeh8OIdV7fsxLJedl0=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
