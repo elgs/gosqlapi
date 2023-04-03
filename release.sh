@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 declare -a branches=(
-    # "all"
-    # "mysql" 
+    "all"
+    "mysql" 
     "pq",
-    # "pgx"
-    # "sqlite"
-    # "sqlite3"
-    # "sqlserver"
-    # "oracle"
+    "pgx"
+    "sqlite"
+    "sqlite3"
+    "sqlserver"
+    "oracle"
 )
 
 declare -a do_not_merge=(
