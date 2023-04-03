@@ -8,14 +8,14 @@
   },
   "databases": {
     "test_db": {
-      "type": "sqlite",
-      "url": ":memory:"
+      "type": "oracle",
+      "url": "env:oracle_url"
     }
   },
   "scripts": {
     "init": {
       "database": "test_db",
-      "path": "tests/init.sql",
+      "path": "tests/init_oracle.sql",
       "public_exec": true
     },
     "metadata": {
@@ -27,20 +27,17 @@
     "test_table": {
       "database": "test_db",
       "name": "TEST_TABLE",
-      "exported_columns": [
-        "NAME"
-      ],
       "public_read": true,
       "public_write": true
     },
     "token_table": {
       "database": "test_db",
-      "name": "TOKENS",
-      "show_total": true
+      "name": "TOKENS"
     }
   },
   "managed_tokens": {
     "database": "test_db",
     "query_path": "tests/token_query.sql"
-  }
+  },
+  "cache_tokens": true
 }

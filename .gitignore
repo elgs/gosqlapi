@@ -15,5 +15,6 @@
 # vendor/
 
 tmp/
-tests/
 build/
+
+test.sh
