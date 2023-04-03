@@ -13,8 +13,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a h1:vO9yvZPJqJMJJsFdaD+sLkwjZfxzr/0fm22AnW8R6ms=
 github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a/go.mod h1:1zHirgOZTAY00iwXKAX0NsVKjwkwjSr1P+yqciHfRH0=
-github.com/elgs/gosqlcrud v0.0.0-20230401170233-082426276c32 h1:+Slopyh/Bu0Km5kLs9UmoH4D7mcdrJ/LTOb4hKn1ocI=
-github.com/elgs/gosqlcrud v0.0.0-20230401170233-082426276c32/go.mod h1:RaJ1Deq3R7NZjjL4JjVZbHKcFQeh8OIdV7fsxLJedl0=
+github.com/elgs/gosqlcrud v0.0.0-20230403014717-415b71411185 h1:H5fuYXjcYAtKymnh/oxjNgaaqAtSnEni/cWKW9RMJOM=
+github.com/elgs/gosqlcrud v0.0.0-20230403014717-415b71411185/go.mod h1:RaJ1Deq3R7NZjjL4JjVZbHKcFQeh8OIdV7fsxLJedl0=
 github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ7YPc=
 github.com/go-sql-driver/mysql v1.7.0/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
 github.com/golang-jwt/jwt/v4 v4.4.2/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=

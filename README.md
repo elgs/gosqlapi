@@ -483,7 +483,20 @@ https://pkg.go.dev/modernc.org/sqlite
 
 https://github.com/go-sql-driver/mysql
 
-### PostgreSQL
+### PostgreSQL (pq or pgx)
+
+```json
+{
+  "databases": {
+    "piq": {
+      "type": "pq",
+      "url": "postgres://user:pass@localhost:5432/test_db?sslmode=disable"
+    }
+  }
+}
+```
+
+https://github.com/lib/pq
 
 ```json
 {
