@@ -1,7 +1,10 @@
 {
   "web": {
     "http_addr": "127.0.0.1:8080",
-    "cors": true
+    "cors": true,
+    "http_headers": {
+      "abc": "123"
+    }
   },
   "databases": {
     "test_db": {
