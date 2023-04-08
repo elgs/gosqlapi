@@ -21,6 +21,11 @@
     "metadata": {
       "database": "test_db",
       "path": "tests/metadata.sql"
+    },
+    "tables": {
+      "database": "test_db",
+      "sql": "SELECT table_name as name FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_name",
+      "public_exec": true
     }
   },
   "tables": {
