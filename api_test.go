@@ -191,7 +191,7 @@ func (this *APITestSuite) TestAPI() {
 	this.Assert().Equal("Bearer 0987654321", string(respBody7["metadata"].([]any)[0].(map[string]any)["authorization"].(string)))
 
 	// query tables
-	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/tables/", nil)
+	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/list_tables/", nil)
 	this.Nil(err)
 	resp, err = client.Do(req)
 	this.Nil(err)

@@ -22,7 +22,7 @@
       "database": "test_db",
       "path": "tests/metadata.sql"
     },
-    "tables": {
+    "list_tables": {
       "database": "test_db",
       "sql": "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
       "public_exec": true
