@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -188,4 +189,20 @@ func (this *APITestSuite) TestAPI() {
 	err = json.Unmarshal(body, &respBody7)
 	this.Nil(err)
 	this.Assert().Equal("Bearer 0987654321", string(respBody7["metadata"].([]any)[0].(map[string]any)["authorization"].(string)))
+
+	// query tables
+	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/tables/", nil)
+	this.Nil(err)
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
+	body, err = io.ReadAll(resp.Body)
+	this.Nil(err)
+	var respBody8 []any
+	err = json.Unmarshal(body, &respBody8)
+	this.Nil(err)
+	this.Assert().Equal("TEST_TABLE", strings.ToUpper(respBody8[0].(map[string]any)["name"].(string)))
+	this.Assert().Equal("TOKENS", strings.ToUpper(respBody8[1].(map[string]any)["name"].(string)))
+
 }
