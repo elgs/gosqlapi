@@ -75,9 +75,9 @@ func (this *APITestSuite) TestAPI() {
 	this.Nil(err)
 	this.Assert().Equal(2, len(respBody["data"].([]any)))
 	this.Assert().Equal(1, int(respBody["data"].([]any)[0].(map[string]any)["id"].(float64)))
-	this.Assert().Equal("Alpha", string(respBody["data"].([]any)[0].(map[string]any)["name"].(string)))
+	this.Assert().Equal("Alpha", respBody["data"].([]any)[0].(map[string]any)["name"].(string))
 	this.Assert().Equal(2, int(respBody["data"].([]any)[1].(map[string]any)["id"].(float64)))
-	this.Assert().Equal("Beta", string(respBody["data"].([]any)[1].(map[string]any)["name"].(string)))
+	this.Assert().Equal("Beta", respBody["data"].([]any)[1].(map[string]any)["name"].(string))
 
 	// get
 	resp, err = http.Get(this.baseURL + "test_db/test_table/1")
@@ -150,8 +150,8 @@ func (this *APITestSuite) TestAPI() {
 	this.Assert().Equal(1, int(respBody6["offset"].(float64)))
 	this.Assert().Equal(2, int(respBody6["page_size"].(float64)))
 	this.Assert().Equal(2, len(respBody6["data"].([]any)))
-	this.Assert().Equal("Beta", string(respBody6["data"].([]any)[0].(map[string]any)["name"].(string)))
-	this.Assert().Equal("Gamma", string(respBody6["data"].([]any)[1].(map[string]any)["name"].(string)))
+	this.Assert().Equal("Beta", respBody6["data"].([]any)[0].(map[string]any)["name"].(string))
+	this.Assert().Equal("Gamma", respBody6["data"].([]any)[1].(map[string]any)["name"].(string))
 	// get without auth token and get 401
 	resp, err = http.Get(this.baseURL + "test_db/token_table/")
 	this.Nil(err)
@@ -188,7 +188,7 @@ func (this *APITestSuite) TestAPI() {
 	var respBody7 map[string]any
 	err = json.Unmarshal(body, &respBody7)
 	this.Nil(err)
-	this.Assert().Equal("Bearer 0987654321", string(respBody7["metadata"].([]any)[0].(map[string]any)["authorization"].(string)))
+	this.Assert().Equal("Bearer 0987654321", respBody7["metadata"].([]any)[0].(map[string]any)["authorization"].(string))
 
 	// query tables
 	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/list_tables/", nil)
