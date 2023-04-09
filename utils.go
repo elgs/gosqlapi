@@ -96,7 +96,8 @@ func IsQuery(sql string) bool {
 	return strings.HasPrefix(sqlUpper, "SELECT") ||
 		strings.HasPrefix(sqlUpper, "SHOW") ||
 		strings.HasPrefix(sqlUpper, "DESCRIBE") ||
-		strings.HasPrefix(sqlUpper, "EXPLAIN")
+		strings.HasPrefix(sqlUpper, "EXPLAIN") ||
+		strings.HasPrefix(sqlUpper, "PRAGMA")
 }
 
 func ShouldExport(sql string) bool {
