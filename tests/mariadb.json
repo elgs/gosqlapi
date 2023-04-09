@@ -15,16 +15,21 @@
   "scripts": {
     "init": {
       "database": "test_db",
-      "path": "tests/init.sql",
+      "path": "scripts/init.sql",
       "public_exec": true
     },
     "metadata": {
       "database": "test_db",
-      "path": "tests/metadata.sql"
+      "path": "scripts/metadata.sql"
     },
     "list_tables": {
       "database": "test_db",
       "sql": "SELECT table_name as name FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_name",
+      "public_exec": true
+    },
+    "list_columns": {
+      "database": "test_db",
+      "sql": "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?table_name?",
       "public_exec": true
     }
   },
@@ -42,7 +47,7 @@
   },
   "managed_tokens": {
     "database": "test_db",
-    "query_path": "tests/token_query.sql"
+    "query_path": "scripts/token_query.sql"
   },
   "cache_tokens": true
 }
