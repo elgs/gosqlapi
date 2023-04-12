@@ -209,20 +209,25 @@ func (this *App) buildTokenQuery() error {
 		if this.ManagedTokens.ExecPrivate == "" {
 			this.ManagedTokens.ExecPrivate = "EXEC_PRIVATE"
 		}
+		if this.ManagedTokens.AllowedOrigins == "" {
+			this.ManagedTokens.AllowedOrigins = "ALLOWED_ORIGINS"
+		}
 
 		this.ManagedTokens.Query = fmt.Sprintf(`SELECT 
-	%s AS "target_database",
-	%s AS "target_objects",
-	%s AS "read_private",
-	%s AS "write_private",
-	%s AS "exec_private"
-	FROM %s WHERE %s=?token?`,
+			%s AS "target_database",
+			%s AS "target_objects",
+			%s AS "read_private",
+			%s AS "write_private",
+			%s AS "exec_private",
+			%s AS "allowed_origins"
+			FROM %s WHERE %s=?token?`,
 			this.ManagedTokens.TargetDatabase,
 			this.ManagedTokens.TargetObjects,
 			this.ManagedTokens.ReadPrivate,
 			this.ManagedTokens.WritePrivate,
 			this.ManagedTokens.ExecPrivate,
 			this.ManagedTokens.TableName,
+			this.ManagedTokens.AllowedOrigins,
 			this.ManagedTokens.Token)
 	}
 	tokenDb, err := this.GetDatabase(this.ManagedTokens.Database)
@@ -266,16 +271,16 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	authHeader := r.Header.Get("authorization")
-	if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
-		authHeader = strings.TrimSpace(authHeader[7:])
+	authorization := r.Header.Get("authorization")
+	if strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
+		authorization = strings.TrimSpace(authorization[7:])
 	}
 
 	urlParts := strings.Split(r.URL.Path[1:], "/")
 	databaseId := urlParts[0]
 
-	if this.CacheTokens && databaseId == ".clear-tokens" && authHeader != "" {
-		delete(this.tokenCache, authHeader)
+	if this.CacheTokens && databaseId == ".clear-tokens" && authorization != "" {
+		delete(this.tokenCache, authorization)
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success":"token cleared"}`)
 		return
@@ -291,7 +296,28 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	methodUpper := strings.ToUpper(r.Method)
 
-	authorized, err := this.authorize(methodUpper, authHeader, databaseId, objectId)
+	origin := r.Header.Get("Origin")
+	referer := r.Header.Get("Referer")
+
+	if strings.HasPrefix(origin, "http://") || strings.HasPrefix(origin, "https://") {
+		originUrl, err := url.Parse(origin)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			return
+		}
+		origin = originUrl.Hostname()
+	}
+	if strings.HasPrefix(referer, "http://") || strings.HasPrefix(referer, "https://") {
+		refererUrl, err := url.Parse(referer)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			return
+		}
+		referer = refererUrl.Hostname()
+	}
+	authorized, err := this.authorize(methodUpper, authorization, databaseId, objectId, origin, referer)
 	if !authorized {
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
@@ -405,7 +431,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, jsonString)
 }
 
-func (this *App) authorize(methodUpper string, authHeader string, databaseId string, objectId string) (bool, error) {
+func (this *App) authorize(methodUpper string, authorization string, databaseId string, objectId string, origin string, referer string) (bool, error) {
 
 	// if object is not found, return false
 	// if object is found, check if it is public
@@ -434,8 +460,8 @@ func (this *App) authorize(methodUpper string, authHeader string, databaseId str
 
 	// managed tokens
 	if this.ManagedTokens != nil {
-		if x, ok := this.tokenCache[authHeader]; ok {
-			return hasAccess(methodUpper, x, databaseId, objectId)
+		if x, ok := this.tokenCache[authorization]; ok {
+			return hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 		}
 		managedTokensDatabase, err := this.GetDatabase(this.ManagedTokens.Database)
 		if err != nil {
@@ -447,36 +473,58 @@ func (this *App) authorize(methodUpper string, authHeader string, databaseId str
 		}
 
 		accesses := []Access{}
-		err = gosqlcrud.QueryToStructs(tokenDB, &accesses, this.ManagedTokens.Query, authHeader)
+		err = gosqlcrud.QueryToStructs(tokenDB, &accesses, this.ManagedTokens.Query, authorization)
 		if err != nil {
 			return false, err
 		}
 		for index := range accesses {
 			access := &accesses[index]
 			access.TargetObjectArray = strings.Fields(access.TargetObjects)
+			access.AllowedOriginArray = strings.Fields(access.AllowedOrigins)
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
 		if this.tokenCache == nil {
 			this.tokenCache = make(map[string][]*Access)
 		}
-		this.tokenCache[authHeader] = x
-		return hasAccess(methodUpper, x, databaseId, objectId)
+		this.tokenCache[authorization] = x
+		return hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 	}
 
 	// object is not public, check token
 	// if token doesn't have any access, return false
-	accesses := this.Tokens[authHeader]
+	accesses := this.Tokens[authorization]
 	if len(accesses) == 0 {
 		return false, fmt.Errorf("access denied")
 	} else {
 		// when token has access, check if any access is allowed for database and object
-		return hasAccess(methodUpper, accesses, databaseId, objectId)
+		return hasAccess(methodUpper, accesses, databaseId, objectId, origin, referer)
 	}
 }
 
-func hasAccess(methodUpper string, accesses []*Access, databaseId string, objectId string) (bool, error) {
+func hostMatch(host string, hostPattern string) bool {
+	if host == hostPattern {
+		return true
+	}
+	if strings.HasPrefix(hostPattern, "*") {
+		return strings.HasSuffix(host, hostPattern[1:])
+	}
+	return false
+}
+
+func originOk(origin string, referer string, allowedOrigins []string) bool {
+	for _, allowedOrigin := range allowedOrigins {
+		if hostMatch(origin, allowedOrigin) || hostMatch(referer, allowedOrigin) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasAccess(methodUpper string, accesses []*Access, databaseId string, objectId string, origin string, referer string) (bool, error) {
 	for _, access := range accesses {
-		if (access.TargetDatabase == databaseId || access.TargetDatabase == "*") && (Contains(access.TargetObjectArray, objectId) || Contains(access.TargetObjectArray, "*")) {
+		if (access.TargetDatabase == databaseId || access.TargetDatabase == "*") &&
+			(Contains(access.TargetObjectArray, objectId) || Contains(access.TargetObjectArray, "*")) &&
+			originOk(origin, referer, access.AllowedOriginArray) {
 			switch methodUpper {
 			case http.MethodPatch:
 				if access.ExecPrivate {
