@@ -37,12 +37,14 @@ type Database struct {
 }
 
 type Access struct {
-	TargetDatabase    string   `json:"target_database" db:"target_database"`
-	TargetObjectArray []string `json:"target_objects"`
-	TargetObjects     string   `db:"target_objects"`
-	ReadPrivate       bool     `json:"read_private" db:"read_private"`
-	WritePrivate      bool     `json:"write_private" db:"write_private"`
-	ExecPrivate       bool     `json:"exec_private" db:"exec_private"`
+	TargetDatabase     string   `json:"target_database" db:"target_database"`
+	TargetObjectArray  []string `json:"target_objects"`
+	TargetObjects      string   `db:"target_objects"`
+	ReadPrivate        bool     `json:"read_private" db:"read_private"`
+	WritePrivate       bool     `json:"write_private" db:"write_private"`
+	ExecPrivate        bool     `json:"exec_private" db:"exec_private"`
+	AllowedOriginArray []string `json:"allowed_origins"`
+	AllowedOrigins     string   `db:"allowed_origins"`
 }
 
 type ManagedTokens struct {
@@ -56,6 +58,7 @@ type ManagedTokens struct {
 	ReadPrivate    string `json:"read_private"`
 	WritePrivate   string `json:"write_private"`
 	ExecPrivate    string `json:"exec_private"`
+	AllowedOrigins string `json:"allowed_origins"`
 }
 
 type Statement struct {
