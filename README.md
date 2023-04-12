@@ -253,7 +253,8 @@ Simple tokens are configured in `gosqlapi.json`:
         "target_database": "test_db",
         "target_objects": ["test_table"],
         "read_private": true,
-        "write_private": true
+        "write_private": true,
+        "allowed_origins": ["localhost", "*.example.com"]
       },
       {
         "target_database": "test_db",
@@ -266,6 +267,8 @@ Simple tokens are configured in `gosqlapi.json`:
 ```
 
 In the example above, the auth token is configured to allow users to read and write `test_table` and execute `init` script in `test_db`.
+
+The `allowed_origins` field is optional. If it is set, the server will only allow requests from the specified origins. It checks the `Origin` or `Referer` header to determine the origin of the request. If it is not set, it will reject all requests. If it is set to `*`, it will allow requests from all origins or referers.
 
 You can use `*` to match all databases or all target objects:
 
@@ -314,6 +317,7 @@ CREATE TABLE IF NOT EXISTS `TOKENS` (
   `READ_PRIVATE` INT NOT NULL DEFAULT 0 ,     -- required, 1: read, 0: no read
   `WRITE_PRIVATE` INT NOT NULL DEFAULT 0 ,    -- required, 1: write, 0: no write
   `EXEC_PRIVATE` INT NOT NULL DEFAULT 0 ,     -- required, 1: exec, 0: no exec
+  `ALLOWED_ORIGINS` TEXT NOT NULL,            -- required, allowed origins or referers, separated by whitespace
   CONSTRAINT `PRIMARY` PRIMARY KEY (`ID`)
 );
 create INDEX TOKEN_INDEX ON TOKENS (TOKEN);
@@ -335,7 +339,8 @@ If you already have a table that stores managed tokens, you can map the fields i
     "target_objects": "TARGET_OBJECTS",
     "read_private": "READ_PRIVATE",
     "write_private": "WRITE_PRIVATE",
-    "exec_private": "EXEC_PRIVATE"
+    "exec_private": "EXEC_PRIVATE",
+    "allowed_origins": "ALLOWED_ORIGINS"
   }
 }
 ```
@@ -350,7 +355,7 @@ Instead of specifying the `table_name`, you can use a `query` in the config. The
 {
   "managed_tokens": {
     "database": "test_db",
-    "query": "SELECT TARGET_DATABASE AS target_database, TARGET_OBJECTS AS target_objects, READ_PRIVATE AS read_private, WRITE_PRIVATE AS write_private, EXEC_PRIVATE AS exec_private FROM TOKENS WHERE TOKEN=?token?"
+    "query": "SELECT TARGET_DATABASE AS target_database, TARGET_OBJECTS AS target_objects, READ_PRIVATE AS read_private, WRITE_PRIVATE AS write_private, EXEC_PRIVATE AS exec_private, ALLOWED_ORIGINS AS allowed_origins FROM TOKENS WHERE TOKEN=?token?"
   }
 }
 ```
