@@ -183,6 +183,22 @@ func (this *APITestSuite) TestAPI() {
 	this.Nil(err)
 	defer resp.Body.Close()
 	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
+	// get with auth token with no origin and get 401
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "no_access")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
+	// get with auth token with all origin access and get 200
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "super")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
 
 	// query metadata
 	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/metadata/", nil)

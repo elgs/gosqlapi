@@ -38,4 +38,8 @@ VALUES (2,  '0987654321', 'test_db',        'metadata',       0,            0,  
 
 insert INTO 
 TOKENS (ID, TOKEN,        TARGET_DATABASE,  TARGET_OBJECTS,   READ_PRIVATE, WRITE_PRIVATE,  EXEC_PRIVATE, ALLOWED_ORIGINS)
-VALUES (3,  'super',      'test_db',        '*',              1,            1,              1,            '*');
+VALUES (3,  'no_access',  'test_db',        '*',              1,            1,              1,            '');
+
+insert INTO 
+TOKENS (ID, TOKEN,        TARGET_DATABASE,  TARGET_OBJECTS,   READ_PRIVATE, WRITE_PRIVATE,  EXEC_PRIVATE, ALLOWED_ORIGINS)
+VALUES (4,  'super',      'test_db',        '*',              1,            1,              1,            '*');
