@@ -168,8 +168,33 @@ func (this *APITestSuite) TestAPI() {
 	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
 	// get with auth token and get 200
 	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	req.Header.Set("Origin", "http://localhost:8080")
 	this.Nil(err)
 	req.Header.Set("authorization", "1234567890")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
+	// get with auth token but no origin and get 401
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "1234567890")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
+	// get with auth token with no origin and get 401
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "no_access")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
+	// get with auth token with all origin access and get 200
+	req, err = http.NewRequest("GET", this.baseURL+"test_db/token_table/", nil)
+	this.Nil(err)
+	req.Header.Set("authorization", "super")
 	resp, err = client.Do(req)
 	this.Nil(err)
 	defer resp.Body.Close()
@@ -177,6 +202,7 @@ func (this *APITestSuite) TestAPI() {
 
 	// query metadata
 	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/metadata/", nil)
+	req.Header.Set("Origin", "https://*.example.com")
 	this.Nil(err)
 	req.Header.Set("authorization", "Bearer 0987654321")
 	resp, err = client.Do(req)
@@ -189,6 +215,15 @@ func (this *APITestSuite) TestAPI() {
 	err = json.Unmarshal(body, &respBody7)
 	this.Nil(err)
 	this.Assert().Equal("Bearer 0987654321", respBody7["metadata"].([]any)[0].(map[string]any)["authorization"].(string))
+	// query metadata with wrong referer
+	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/metadata/", nil)
+	req.Header.Set("Origin", "https://*.example.net")
+	this.Nil(err)
+	req.Header.Set("authorization", "Bearer 0987654321")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
 
 	// query tables
 	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/list_tables/", nil)
