@@ -42,7 +42,7 @@ $ go clean -i github.com/elgs/gosqlapi
 
 ### Download pre-built binaries
 
-If you don't have Go installed, you can download pre-built binaries from the [releases page](https://goweb.az.ht/gosqlapi/build/).
+If you don't have Go installed, you can download pre-built binaries from the [releases page](https://dbapi.dev/gosqlapi/build/).
 
 ## Usage
 
