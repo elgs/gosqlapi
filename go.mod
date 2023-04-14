@@ -2,9 +2,6 @@ module github.com/elgs/gosqlapi
 
 go 1.20
 
-// replace github.com/elgs/gosplitargs => ../gosplitargs
-// replace github.com/elgs/gosqlcrud => ../gosqlcrud
-
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20230403082638-cc533643a350
