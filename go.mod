@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20230403082638-cc533643a350
-	github.com/lib/pq v1.10.7
+	github.com/lib/pq v1.10.8
 	github.com/stretchr/testify v1.8.2
 )
 
