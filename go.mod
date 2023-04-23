@@ -10,7 +10,7 @@ require (
 	github.com/microsoft/go-mssqldb v0.21.0
 	github.com/sijms/go-ora/v2 v2.6.17
 	github.com/stretchr/testify v1.8.2
-	modernc.org/sqlite v1.21.2
+	modernc.org/sqlite v1.22.0
 )
 
 require (
