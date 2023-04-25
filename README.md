@@ -496,7 +496,7 @@ https://github.com/go-sql-driver/mysql
 ```json
 {
   "databases": {
-    "piq": {
+    "test_db": {
       "type": "pq",
       "url": "postgres://user:pass@localhost:5432/test_db?sslmode=disable"
     }
@@ -509,7 +509,7 @@ https://github.com/lib/pq
 ```json
 {
   "databases": {
-    "piq": {
+    "test_db": {
       "type": "pgx",
       "url": "postgres://user:pass@localhost:5432/test_db"
     }
