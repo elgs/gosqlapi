@@ -10,7 +10,7 @@ require (
 	github.com/elgs/gosqlcrud v0.0.0-20230403082638-cc533643a350
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/jackc/pgx/v5 v5.3.1
-	github.com/lib/pq v1.10.8
+	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v0.21.0
 	github.com/sijms/go-ora/v2 v2.6.17
 	github.com/stretchr/testify v1.8.2
