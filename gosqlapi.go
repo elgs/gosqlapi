@@ -105,6 +105,9 @@ func (this *Database) GetConn() (*sql.DB, error) {
 		this.Url = os.Getenv(env)
 	}
 	this.conn, err = sql.Open(this.Type, this.Url)
+	if err != nil {
+		return nil, err
+	}
 	this.dbType = gosqlcrud.GetDbType(this.conn)
 	return this.conn, err
 }
