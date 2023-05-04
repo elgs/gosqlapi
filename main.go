@@ -30,6 +30,10 @@ func main() {
 		log.Fatal(err)
 	}
 	app.run()
+
+	Hook(func() {
+		app.shutdown()
+	})
 }
 
 // Check if anything uses cgo
