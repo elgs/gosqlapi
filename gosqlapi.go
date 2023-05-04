@@ -62,11 +62,6 @@ func (this *App) run() {
 		}()
 		log.Printf("Listening on https://%s/\n", this.Web.HttpsAddr)
 	}
-
-	Hook(func() {
-		this.shutdown()
-	})
-
 }
 
 func (this *App) shutdown() {
