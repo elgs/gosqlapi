@@ -39,7 +39,6 @@ func TestAPITestSuite(t *testing.T) {
 			config:  config,
 		})
 	}
-
 }
 
 func (this *APITestSuite) SetupSuite() {
