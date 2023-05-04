@@ -239,5 +239,4 @@ func (this *APITestSuite) TestAPI() {
 	this.Nil(err)
 	this.Assert().Equal("TEST_TABLE", strings.ToUpper(respBody8[0].(map[string]any)["name"].(string)))
 	this.Assert().Equal("TOKENS", strings.ToUpper(respBody8[1].(map[string]any)["name"].(string)))
-
 }
