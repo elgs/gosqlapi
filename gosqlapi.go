@@ -43,7 +43,7 @@ func (this *App) run() {
 		go func() {
 			err := this.Web.httpServer.ListenAndServe()
 			if err != nil {
-				log.Printf("http://%s/ %v\n", this.Web.HttpAddr, err)
+				log.Fatalf("http://%s/ %v\n", this.Web.HttpAddr, err)
 			}
 		}()
 		log.Printf("Listening on http://%s/\n", this.Web.HttpAddr)
@@ -57,7 +57,7 @@ func (this *App) run() {
 		go func() {
 			err := this.Web.httpsServer.ListenAndServeTLS(this.Web.CertFile, this.Web.KeyFile)
 			if err != nil {
-				log.Printf("https://%s/ %v\n", this.Web.HttpsAddr, err)
+				log.Fatalf("https://%s/ %v\n", this.Web.HttpsAddr, err)
 			}
 		}()
 		log.Printf("Listening on https://%s/\n", this.Web.HttpsAddr)
