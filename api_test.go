@@ -5,54 +5,64 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 )
 
+var count = 0
+
 type APITestSuite struct {
 	suite.Suite
-	baseURL string
-	config  string
-	app     *App
+	baseURL    string
+	serverAddr string
+	config     string
+	app        *App
 }
 
 func TestAPITestSuite(t *testing.T) {
 	configs := []string{
 		"./gosqlapi.json",
-		// "./tests/mysql.json",
-		// "./tests/mariadb.json",
-		// "./tests/pgx.json",
-		// "./tests/postgres.json",
-		// "./tests/sqlserver.json",
-		// "./tests/oracle.json",
-		// "./tests/sqlite.json",
+		"./tests/mysql.json",
+		"./tests/mariadb.json",
+		"./tests/pgx.json",
+		"./tests/postgres.json",
+		"./tests/sqlserver.json",
+		"./tests/oracle.json",
+		"./tests/sqlite.json",
 		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
 	for _, config := range configs {
+		port := rand.Intn(1000) + 8000
 		suite.Run(t, &APITestSuite{
-			baseURL: "http://localhost:8080/",
-			config:  config,
+			baseURL:    fmt.Sprintf("http://127.0.0.1:%v/", port),
+			serverAddr: fmt.Sprintf("127.0.0.1:%v", port),
+			config:     config,
 		})
 	}
+	fmt.Println("Press Ctrl+C to exit.")
+	Hook(nil)
 }
 
 func (this *APITestSuite) SetupSuite() {
-	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+	count++
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", count)
 	confBytes, err := os.ReadFile(this.config)
 	this.Nil(err)
 	this.app, err = NewApp(confBytes)
 	this.Nil(err)
+	this.app.Web.HttpAddr = this.serverAddr
 	go this.app.run()
+	time.Sleep(time.Second)
 }
 
 func (this *APITestSuite) TearDownSuite() {
-	this.app.shutdown()
-	fmt.Println("-------------------------------------------------------------")
 }
 
 func (this *APITestSuite) TestAPI() {
@@ -238,4 +248,7 @@ func (this *APITestSuite) TestAPI() {
 	this.Nil(err)
 	this.Assert().Equal("TEST_TABLE", strings.ToUpper(respBody8[0].(map[string]any)["name"].(string)))
 	this.Assert().Equal("TOKENS", strings.ToUpper(respBody8[1].(map[string]any)["name"].(string)))
+
+	count--
+	fmt.Println("-------------------------------------------------------------", count)
 }
