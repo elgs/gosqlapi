@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.4.0
-	github.com/sijms/go-ora/v2 v2.7.9
+	github.com/sijms/go-ora/v2 v2.7.10
 	github.com/stretchr/testify v1.8.4
 	modernc.org/sqlite v1.24.0
 )
@@ -32,7 +32,7 @@ require (
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
-	golang.org/x/tools v0.11.0 // indirect
+	golang.org/x/tools v0.11.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/uint128 v1.3.0 // indirect
 	modernc.org/cc/v3 v3.41.0 // indirect
