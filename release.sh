@@ -33,4 +33,5 @@ do
     git push origin "$branch"
 done
 
+go mod tidy
 git checkout master
