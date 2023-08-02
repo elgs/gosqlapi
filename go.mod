@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.4.0
-	github.com/sijms/go-ora/v2 v2.7.10
+	github.com/sijms/go-ora/v2 v2.7.11
 	github.com/stretchr/testify v1.8.4
 	modernc.org/sqlite v1.24.0
 )
