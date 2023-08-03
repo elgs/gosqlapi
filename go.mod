@@ -8,10 +8,10 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/lib/pq v1.10.9
-	github.com/microsoft/go-mssqldb v1.4.0
+	github.com/microsoft/go-mssqldb v1.5.0
 	github.com/sijms/go-ora/v2 v2.7.11
 	github.com/stretchr/testify v1.8.4
-	modernc.org/sqlite v1.24.0
+	modernc.org/sqlite v1.25.0
 )
 
 require (
