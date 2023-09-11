@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
-	github.com/elgs/gosqlcrud v0.0.0-20230819023200-42db14f69e84
+	github.com/elgs/gosqlcrud v0.0.0-20230911082023-46781a6584aa
 	github.com/microsoft/go-mssqldb v1.6.0
 	github.com/stretchr/testify v1.8.4
 )
