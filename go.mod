@@ -1,6 +1,6 @@
 module github.com/elgs/gosqlapi
 
-go 1.21.4
+go 1.21.5
 
 // replace github.com/elgs/gosplitargs => ../gosplitargs
 // replace github.com/elgs/gosqlcrud => ../gosqlcrud
@@ -42,7 +42,7 @@ require (
 	lukechampine.com/uint128 v1.3.0 // indirect
 	modernc.org/cc/v3 v3.41.0 // indirect
 	modernc.org/ccgo/v3 v3.16.15 // indirect
-	modernc.org/libc v1.35.0 // indirect
+	modernc.org/libc v1.36.0 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
 	modernc.org/opt v0.1.3 // indirect
