@@ -338,7 +338,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
-	params := valuesToMap(false, paramValues)
+	params := valuesToMap(false, this.NullValue, paramValues)
 	for k, v := range bodyData {
 		params[k] = v
 	}
