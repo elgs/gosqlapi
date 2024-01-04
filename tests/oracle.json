@@ -49,5 +49,6 @@
     "database": "test_db",
     "query_path": "scripts/token_query.sql"
   },
-  "cache_tokens": true
+  "cache_tokens": true,
+  "null_value": "NULL"
 }
