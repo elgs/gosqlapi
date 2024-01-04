@@ -15,6 +15,7 @@ type App struct {
 	Tokens        map[string][]*Access `json:"tokens"`
 	ManagedTokens *ManagedTokens       `json:"managed_tokens"`
 	CacheTokens   bool                 `json:"cache_tokens"`
+	NullValue     any                  `json:"null_value"`
 	tokenCache    map[string][]*Access
 }
 

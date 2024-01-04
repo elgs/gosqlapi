@@ -122,14 +122,25 @@ $ curl -X PATCH 'http://localhost:8080/test_db/init/' \
   "low": 0,
   "high": 3
 }'
-{"data":[{"id":1,"name":"Alpha"},{"id":2,"name":"Beta"}]}
+```
+
+```json
+{
+  "data": [
+    { "id": 1, "name": "Alpha" },
+    { "id": 2, "name": "Beta" }
+  ]
+}
 ```
 
 #### Get a record
 
 ```bash
 $ curl -X GET 'http://localhost:8080/test_db/test_table/1'
-{"id":1,"name":"Alpha"}
+```
+
+```json
+{ "id": 1, "name": "Alpha" }
 ```
 
 #### Create a new record
@@ -141,7 +152,10 @@ $ curl -X POST 'http://localhost:8080/test_db/test_table' \
   "id": 4,
   "name": "Delta"
 }'
-{"last_insert_id":4,"rows_affected":1}
+```
+
+```json
+{ "last_insert_id": 4, "rows_affected": 1 }
 ```
 
 #### Update a record
@@ -152,14 +166,20 @@ $ curl -X PUT 'http://localhost:8080/test_db/test_table/4' \
   --data-raw '{
   "name": "Omega"
 }'
-{"last_insert_id":4,"rows_affected":1}
+```
+
+```json
+{ "last_insert_id": 4, "rows_affected": 1 }
 ```
 
 #### Delete a record
 
 ```bash
 $ curl -X DELETE 'http://localhost:8080/test_db/test_table/4'
-{"last_insert_id":4,"rows_affected":1}
+```
+
+```json
+{ "last_insert_id": 4, "rows_affected": 1 }
 ```
 
 #### Primary Key
@@ -182,7 +202,10 @@ If the table's primary key is not `ID`, you can specify the primary key for a ta
 
 ```bash
 $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
-[{"id":2,"name":"Beta"}]
+```
+
+```json
+[{ "id": 2, "name": "Beta" }]
 ```
 
 #### Search for records with .page_size, .offset and .order_by
@@ -190,6 +213,9 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 ```bash
 $ curl --request GET \
   --url 'http://localhost:8080/test_db/test_table?.page_size=2&.offset=1&.show_total=1'
+```
+
+```json
 {
   "data": [
     {
@@ -234,6 +260,26 @@ You can give a table a default `page_size`, `order_by`, `show_total` and `export
 ```
 
 if `exported_columns` is not set or is empty, all columns will be exported.
+
+### Passing SQL `NULL` from URL parameters
+
+You can pass SQL `NULL` from URL parameters by setting `null_value` in `gosqlapi.json`. For example:
+
+```json
+{
+  "null_value": "null"
+}
+```
+
+Then you can pass `null` from URL parameters:
+
+```bash
+$ curl -X GET 'http://localhost:8080/test_db/test_table?name=null'
+```
+
+```json
+[{ "id": 1, "name": null }]
+```
 
 ## Access Control
 
@@ -678,7 +724,7 @@ If you don't particularly want to use mattn/go-sqlite3, sqlite driver from `mode
 
 MIT License
 
-Copyright (c) 2023 Qian Chen
+Copyright (c) 2024 Qian Chen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -14,17 +14,18 @@ import (
 )
 
 // valuesToMap - convert url.Values to map[string]any
-func valuesToMap(keyLowerCase bool, values ...map[string][]string) map[string]any {
+func valuesToMap(keyLowerCase bool, nullValue any, values ...map[string][]string) map[string]any {
 	ret := map[string]any{}
 	for _, vs := range values {
 		for k, v := range vs {
 			var value any
 			if len(v) == 0 {
 				value = nil
-			} else if len(v) == 1 {
+			} else if len(v) >= 1 {
 				value = v[0]
-			} else {
-				value = v
+				if value == nullValue {
+					value = nil
+				}
 			}
 			if keyLowerCase {
 				ret[strings.ToLower(k)] = value
