@@ -48,5 +48,6 @@
   "managed_tokens": {
     "database": "test_db",
     "query_path": "scripts/token_query.sql"
-  }
+  },
+  "null_value": "NULL"
 }
