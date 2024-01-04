@@ -116,6 +116,48 @@ func (this *APITestSuite) TestAPI() {
 	this.Nil(err)
 	this.Assert().Equal(1, int(respBody3["rows_affected"].(float64)))
 
+	// insert null
+	req, err = http.NewRequest("POST", this.baseURL+"test_db/test_table/?id=5&name=NULL", nil)
+	this.Nil(err)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
+	body, err = io.ReadAll(resp.Body)
+	this.Nil(err)
+	var respBodyInsertNull map[string]any
+	err = json.Unmarshal(body, &respBodyInsertNull)
+	this.Nil(err)
+	this.Assert().Equal(1, int(respBodyInsertNull["rows_affected"].(float64)))
+
+	// test null
+	resp, err = http.Get(this.baseURL + "test_db/test_table/5")
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
+	body, err = io.ReadAll(resp.Body)
+	this.Nil(err)
+	var respBodyTestNull map[string]any
+	err = json.Unmarshal(body, &respBodyTestNull)
+	this.Nil(err)
+	this.Assert().Equal(5, int(respBodyTestNull["id"].(float64)))
+	this.Assert().Equal(nil, respBodyTestNull["name"])
+
+	// delete null
+	req, err = http.NewRequest("DELETE", this.baseURL+"test_db/test_table/5", nil)
+	this.Nil(err)
+	resp, err = client.Do(req)
+	this.Nil(err)
+	defer resp.Body.Close()
+	this.Assert().Equal(http.StatusOK, resp.StatusCode)
+	body, err = io.ReadAll(resp.Body)
+	this.Nil(err)
+	var respBodyDeleteNull map[string]any
+	err = json.Unmarshal(body, &respBodyDeleteNull)
+	this.Nil(err)
+	this.Assert().Equal(1, int(respBodyDeleteNull["rows_affected"].(float64)))
+
 	// put
 	req, err = http.NewRequest("PUT", this.baseURL+"test_db/test_table/4", bytes.NewBuffer([]byte(`{"name": "Omega"}`)))
 	this.Nil(err)
