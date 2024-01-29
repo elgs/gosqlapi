@@ -656,6 +656,8 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 					total = v
 				case int64:
 					total = int(v)
+				case uint64:
+					total = int(v)
 				case float64:
 					total = int(v)
 				}
