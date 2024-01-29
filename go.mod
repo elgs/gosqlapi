@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.2
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.6.0
-	github.com/sijms/go-ora/v2 v2.8.6
+	github.com/sijms/go-ora/v2 v2.8.7
 	github.com/stretchr/testify v1.8.4
 	modernc.org/sqlite v1.28.0
 )
@@ -42,7 +42,7 @@ require (
 	lukechampine.com/uint128 v1.3.0 // indirect
 	modernc.org/cc/v3 v3.41.0 // indirect
 	modernc.org/ccgo/v3 v3.16.15 // indirect
-	modernc.org/libc v1.40.7 // indirect
+	modernc.org/libc v1.40.8 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
 	modernc.org/opt v0.1.3 // indirect
