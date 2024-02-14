@@ -11,7 +11,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.6.0
 	github.com/sijms/go-ora/v2 v2.8.7
 	github.com/stretchr/testify v1.8.4
-	modernc.org/sqlite v1.29.0
+	modernc.org/sqlite v1.29.1
 )
 
 require (
