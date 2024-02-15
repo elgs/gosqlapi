@@ -1,6 +1,6 @@
 module github.com/elgs/gosqlapi
 
-go 1.21.6
+go 1.22.0
 
 // replace github.com/elgs/gosplitargs => ../gosplitargs
 // replace github.com/elgs/gosqlcrud => ../gosqlcrud
@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.3
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.6.0
-	github.com/sijms/go-ora/v2 v2.8.7
+	github.com/sijms/go-ora/v2 v2.8.8
 	github.com/stretchr/testify v1.8.4
 	modernc.org/sqlite v1.29.1
 )
