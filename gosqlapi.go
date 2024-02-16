@@ -33,7 +33,10 @@ func NewApp(confBytes []byte) (*App, error) {
 
 func (this *App) run() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", this.defaultHandler)
+	mux.HandleFunc("/{db}/{obj}", this.defaultHandler)
+	mux.HandleFunc("/{db}/{obj}/", this.defaultHandler)
+	mux.HandleFunc("/{db}/{obj}/{key}", this.defaultHandler)
+	mux.HandleFunc("/{db}/{obj}/{key}/", this.defaultHandler)
 
 	if this.Web.HttpAddr != "" {
 		this.Web.httpServer = &http.Server{
@@ -274,8 +277,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		authorization = strings.TrimSpace(authorization[7:])
 	}
 
-	urlParts := strings.Split(r.URL.Path[1:], "/")
-	databaseId := urlParts[0]
+	databaseId := r.PathValue("db")
 
 	if this.CacheTokens && databaseId == ".clear-tokens" && authorization != "" {
 		delete(this.tokenCache, authorization)
@@ -290,7 +292,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
-	objectId := urlParts[1]
+	objectId := r.PathValue("obj")
 
 	methodUpper := strings.ToUpper(r.Method)
 
@@ -392,10 +394,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		dataId := ""
-		if len(urlParts) > 2 {
-			dataId = urlParts[2]
-		}
+		dataId := r.PathValue("key")
 		table := this.Tables[objectId]
 		if table == nil {
 			w.WriteHeader(http.StatusForbidden)
