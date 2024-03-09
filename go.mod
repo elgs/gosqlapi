@@ -5,8 +5,8 @@ go 1.22.0
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20240217074400-b0d058a774c5
-	github.com/go-sql-driver/mysql v1.7.1
-	github.com/jackc/pgx/v5 v5.5.4
+	github.com/go-sql-driver/mysql v1.8.0
+	github.com/jackc/pgx/v5 v5.5.5
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.7.0
 	github.com/sijms/go-ora/v2 v2.8.9
@@ -15,6 +15,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
