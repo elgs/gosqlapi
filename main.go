@@ -11,7 +11,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-const version = "40"
+const version = "41"
 
 func main() {
 	v := flag.Bool("v", false, "prints version")
