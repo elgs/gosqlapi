@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
-	github.com/elgs/gosqlcrud v0.0.0-20240319191826-1dc15a309dc2
+	github.com/elgs/gosqlcrud v0.0.0-20240320024259-d0b4277298c2
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/stretchr/testify v1.9.0
 )
