@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20240320024259-d0b4277298c2
-	github.com/go-sql-driver/mysql v1.8.0
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/stretchr/testify v1.9.0
 )
 
