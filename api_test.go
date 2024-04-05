@@ -39,7 +39,7 @@ func TestAPITestSuite(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		port := rand.Intn(1000) + 8000
+		port := rand.Intn(10000) + 40000
 		suite.Run(t, &APITestSuite{
 			baseURL:    fmt.Sprintf("http://127.0.0.1:%v/", port),
 			serverAddr: fmt.Sprintf("127.0.0.1:%v", port),
