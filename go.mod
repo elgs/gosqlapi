@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.7.1
-	github.com/sijms/go-ora/v2 v2.8.16
+	github.com/sijms/go-ora/v2 v2.8.17
 	github.com/stretchr/testify v1.9.0
 	modernc.org/sqlite v1.29.9
 )
