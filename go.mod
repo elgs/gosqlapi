@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20240405131937-de90abf1755a
-	github.com/sijms/go-ora/v2 v2.8.18
+	github.com/sijms/go-ora/v2 v2.8.19
 	github.com/stretchr/testify v1.9.0
 )
 
