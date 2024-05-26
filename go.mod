@@ -6,7 +6,7 @@ require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20240405131937-de90abf1755a
 	github.com/go-sql-driver/mysql v1.8.1
-	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.7.1
 	github.com/sijms/go-ora/v2 v2.8.19
