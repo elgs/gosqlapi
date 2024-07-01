@@ -32,9 +32,9 @@ func TestAPITestSuite(t *testing.T) {
 		// "./tests/mariadb.json",
 		// "./tests/pgx.json",
 		// "./tests/postgres.json",
-		// "./tests/sqlserver.json",
 		// "./tests/oracle.json",
 		// "./tests/sqlite.json",
+		// "./tests/sqlserver.json",
 		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
