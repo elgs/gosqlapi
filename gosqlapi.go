@@ -612,7 +612,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 
 			columns := "*"
-			if table.ExportedColumns != nil && len(table.ExportedColumns) > 0 {
+			if len(table.ExportedColumns) > 0 {
 				columns = strings.Join(table.ExportedColumns, ", ")
 			}
 			gosqlcrud.SqlSafe(&columns)
