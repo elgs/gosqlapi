@@ -38,6 +38,7 @@ func TestAPITestSuite(t *testing.T) {
 		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
+	fmt.Println("Starting API tests version:", version)
 	for _, config := range configs {
 		port := rand.Intn(10000) + 40000
 		suite.Run(t, &APITestSuite{
@@ -51,8 +52,6 @@ func TestAPITestSuite(t *testing.T) {
 }
 
 func (this *APITestSuite) SetupSuite() {
-	count++
-	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", count)
 	confBytes, err := os.ReadFile(this.config)
 	this.Nil(err)
 	this.app, err = NewApp(confBytes)
@@ -66,9 +65,20 @@ func (this *APITestSuite) TearDownSuite() {
 }
 
 func (this *APITestSuite) TestAPI() {
-	fmt.Println("Testing API with config:", this.config)
+	this.testAPI(false)
+	this.testAPI(true)
+}
+
+func (this *APITestSuite) testAPI(usePatch bool) {
+	count++
+	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", count)
+	scriptMethod := "PATCH"
+	if !usePatch {
+		scriptMethod = "GET"
+	}
+	fmt.Println("Testing API with config:", this.config, "with usePatch:", usePatch)
 	// patch init
-	req, err := http.NewRequest("PATCH", this.baseURL+"test_db/init/", bytes.NewBuffer([]byte(`{"low": 0,"high": 3}`)))
+	req, err := http.NewRequest(scriptMethod, this.baseURL+"test_db/init/", bytes.NewBuffer([]byte(`{"low": 0,"high": 3}`)))
 	this.Nil(err)
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
@@ -252,7 +262,7 @@ func (this *APITestSuite) TestAPI() {
 	this.Assert().Equal(http.StatusOK, resp.StatusCode)
 
 	// query metadata
-	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/metadata/", nil)
+	req, err = http.NewRequest(scriptMethod, this.baseURL+"test_db/metadata/", nil)
 	req.Header.Set("Origin", "https://*.example.com")
 	this.Nil(err)
 	req.Header.Set("authorization", "Bearer 0987654321")
@@ -267,7 +277,7 @@ func (this *APITestSuite) TestAPI() {
 	this.Nil(err)
 	this.Assert().Equal("Bearer 0987654321", respBody7["metadata"].([]any)[0].(map[string]any)["authorization"].(string))
 	// query metadata with wrong referer
-	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/metadata/", nil)
+	req, err = http.NewRequest(scriptMethod, this.baseURL+"test_db/metadata/", nil)
 	req.Header.Set("Origin", "https://*.example.net")
 	this.Nil(err)
 	req.Header.Set("authorization", "Bearer 0987654321")
@@ -277,7 +287,7 @@ func (this *APITestSuite) TestAPI() {
 	this.Assert().Equal(http.StatusUnauthorized, resp.StatusCode)
 
 	// query tables
-	req, err = http.NewRequest("PATCH", this.baseURL+"test_db/list_tables/", nil)
+	req, err = http.NewRequest(scriptMethod, this.baseURL+"test_db/list_tables/", nil)
 	this.Nil(err)
 	resp, err = client.Do(req)
 	this.Nil(err)
