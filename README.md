@@ -46,6 +46,8 @@ If you don't have Go installed, you can download pre-built binaries from the [re
 
 ## Usage
 
+If you have a `gosqlapi.json` file in the current directory:
+
 ```bash
 $ gosqlapi
 ```
@@ -55,6 +57,11 @@ or if you don't have `gosqlapi.json` in the current directory:
 ```bash
 $ gosqlapi -c /path/to/gosqlapi.json
 ```
+
+## Change Log
+### Version 43
+
+Previously HTTP PATCH method was used to execute pre-defined SQL queries. Now HTTP GET method can be used to execute pre-defined SQL queries, if the script name does not conflict with the table name. The HTTP PATCH method is still supported. The reason for this change is to allow caching of the pre-defined SQL queries. So use HTTP GET method to execute pre-defined SQL queries if you want to cache the results.
 
 ## Hello World
 
@@ -718,7 +725,7 @@ $ git checkout sqlite3
 $ go build
 ```
 
-If you don't particularly want to use mattn/go-sqlite3, sqlite driver from `modernc.org/sqlite` is used by default.
+The sqlite driver from `modernc.org/sqlite` is used by default.
 
 ## License
 
