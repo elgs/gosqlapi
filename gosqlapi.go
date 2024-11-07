@@ -347,7 +347,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	var result any
 
-	if methodUpper == http.MethodPatch {
+	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
 		if script == nil {
 			w.WriteHeader(http.StatusForbidden)
@@ -434,7 +434,7 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 	// if object is found, check if it is public
 	// if object is not public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
-	if methodUpper == http.MethodPatch {
+	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
 		if script == nil || (script.Database != "" && script.Database != databaseId) {
 			return false, fmt.Errorf("script %s not found", objectId)
@@ -458,7 +458,7 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 	// managed tokens
 	if this.ManagedTokens != nil {
 		if x, ok := this.tokenCache[authorization]; ok {
-			return hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
+			return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 		}
 		managedTokensDatabase, err := this.GetDatabase(this.ManagedTokens.Database)
 		if err != nil {
@@ -484,7 +484,7 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 			this.tokenCache = make(map[string][]*Access)
 		}
 		this.tokenCache[authorization] = x
-		return hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
+		return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 	}
 
 	// object is not public, check token
@@ -494,7 +494,7 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 		return false, fmt.Errorf("access denied")
 	} else {
 		// when token has access, check if any access is allowed for database and object
-		return hasAccess(methodUpper, accesses, databaseId, objectId, origin, referer)
+		return this.hasAccess(methodUpper, accesses, databaseId, objectId, origin, referer)
 	}
 }
 
@@ -517,7 +517,7 @@ func originOk(origin string, referer string, allowedOrigins []string) bool {
 	return false
 }
 
-func hasAccess(methodUpper string, accesses []*Access, databaseId string, objectId string, origin string, referer string) (bool, error) {
+func (this *App) hasAccess(methodUpper string, accesses []*Access, databaseId string, objectId string, origin string, referer string) (bool, error) {
 	for _, access := range accesses {
 		if (access.TargetDatabase == databaseId || access.TargetDatabase == "*") &&
 			(Contains(access.TargetObjectArray, objectId) || Contains(access.TargetObjectArray, "*")) &&
@@ -528,8 +528,14 @@ func hasAccess(methodUpper string, accesses []*Access, databaseId string, object
 					return true, nil
 				}
 			case http.MethodGet:
-				if access.ReadPrivate {
-					return true, nil
+				if this.Tables[objectId] == nil {
+					if access.ExecPrivate {
+						return true, nil
+					}
+				} else {
+					if access.ReadPrivate {
+						return true, nil
+					}
 				}
 			case http.MethodPost, http.MethodPut, http.MethodDelete:
 				if access.WritePrivate {
