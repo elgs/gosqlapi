@@ -6,7 +6,7 @@ require (
 	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a
 	github.com/elgs/gosqlcrud v0.0.0-20241108113819-e8efcb8b8444
 	github.com/lib/pq v1.10.9
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
