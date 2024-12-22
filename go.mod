@@ -14,7 +14,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.8.0
 	github.com/sijms/go-ora/v2 v2.8.22
 	github.com/stretchr/testify v1.10.0
-	modernc.org/sqlite v1.34.3
+	modernc.org/sqlite v1.34.4
 )
 
 require (
@@ -43,7 +43,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20241213165251-3bc300f6d0c9 // indirect
 	modernc.org/libc v1.61.4 // indirect
-	modernc.org/mathutil v1.6.0 // indirect
+	modernc.org/mathutil v1.7.0 // indirect
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/strutil v1.2.0 // indirect
 	modernc.org/token v1.1.0 // indirect
