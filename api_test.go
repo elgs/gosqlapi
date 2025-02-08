@@ -28,18 +28,22 @@ type APITestSuite struct {
 func TestAPITestSuite(t *testing.T) {
 	configs := []string{
 		"./gosqlapi.json",
-		// "./tests/mysql.json",
-		// "./tests/mariadb.json",
-		// "./tests/pgx.json",
-		// "./tests/postgres.json",
-		// "./tests/oracle.json",
-		// "./tests/sqlite.json",
+		"./tests/mysql.json",
+		"./tests/mariadb.json",
+		"./tests/pgx.json",
+		"./tests/postgres.json",
+		"./tests/oracle.json",
+		"./tests/sqlite.json",
 		// "./tests/sqlserver.json",
 		// "./tests/sqlite3.json", // need to checkout sqlite3 branch
 	}
 
 	fmt.Println("Starting API tests version:", version)
-	for _, config := range configs {
+	for index, config := range configs {
+		testAll := os.Getenv("test_all")
+		if index > 0 && testAll == "" {
+			continue
+		}
 		port := rand.Intn(10000) + 40000
 		suite.Run(t, &APITestSuite{
 			baseURL:    fmt.Sprintf("http://127.0.0.1:%v/", port),
