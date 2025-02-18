@@ -27,8 +27,7 @@ do
         git reset HEAD -- "$file"
         git checkout -- "$file"
     done
-    GOPROXY=direct go get -u -t
-    go mod tidy
+    ./update.sh
     git commit -am "Merge branch 'master' into $branch"
     git push origin "$branch"
 done
