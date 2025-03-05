@@ -1,6 +1,6 @@
 module github.com/elgs/gosqlapi
 
-go 1.24.0
+go 1.24.1
 
 // replace github.com/elgs/gosplitargs => ../gosplitargs
 // replace github.com/elgs/gosqlcrud => ../gosqlcrud
