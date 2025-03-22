@@ -5,13 +5,13 @@ go 1.24.1
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
 	github.com/elgs/gosqlcrud v0.0.0-20241205072448-7200fbf427e7
-	github.com/go-sql-driver/mysql v1.9.0
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/go-sql-driver/mysql v1.9.1
+	github.com/jackc/pgx/v5 v5.7.3
 	github.com/lib/pq v1.10.9
 	github.com/microsoft/go-mssqldb v1.8.0
 	github.com/sijms/go-ora/v2 v2.8.24
 	github.com/stretchr/testify v1.10.0
-	modernc.org/sqlite v1.36.0
+	modernc.org/sqlite v1.36.1
 )
 
 require (
@@ -39,5 +39,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.61.13 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.8.2 // indirect
+	modernc.org/memory v1.9.1 // indirect
 )
