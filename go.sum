@@ -17,8 +17,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 h1:Gfn+NcN3eAVFLXd9hN9sTd0vtsYXSGwVUKk6EHFVn3s=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906/go.mod h1:w1WVg5EhY8yy+53iAGOaUp4JxlmV24K3D21BpFgxqcY=
-github.com/elgs/gosqlcrud v0.0.0-20250614024355-45aee9c0f4af h1:1/7oCa5vybjocNDp/HcmNMQjbd9t/9bjuFaJbpcapkk=
-github.com/elgs/gosqlcrud v0.0.0-20250614024355-45aee9c0f4af/go.mod h1:3j7eUqsb9MyvXjH7g3VuwLNEAfyuByl7Ql3XRly/WuM=
+github.com/elgs/gosqlcrud v0.0.0-20250619002719-83cb3d1c3883 h1:hO9e74cbklVCNnA4clUkNItKNTf2ItUv8Gw45as6X4I=
+github.com/elgs/gosqlcrud v0.0.0-20250619002719-83cb3d1c3883/go.mod h1:sa1M38ArVFBqFa0ya4iwOTZ/SU9flHyuxBHfv2bvwKg=
 github.com/golang-jwt/jwt/v5 v5.2.2 h1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=
 github.com/golang-jwt/jwt/v5 v5.2.2/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 h1:au07oEsX2xN0ktxqI+Sida1w446QrXBRJ0nee3SNZlA=
@@ -69,8 +69,8 @@ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntN
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-modernc.org/libc v1.65.10 h1:ZwEk8+jhW7qBjHIT+wd0d9VjitRyQef9BnzlzGwMODc=
-modernc.org/libc v1.65.10/go.mod h1:StFvYpx7i/mXtBAfVOjaU0PWZOvIRoZSgXhrwXzr8Po=
+modernc.org/libc v1.66.0 h1:eoFuDb1ozurUY5WSWlgvxHp0FuL+AncMwNjFqGYMJPQ=
+modernc.org/libc v1.66.0/go.mod h1:AiZxInURfEJx516LqEaFcrC+X38rt9G7+8ojIXQKHbo=
 modernc.org/mathutil v1.7.1 h1:GCZVGXdaN8gTqB1Mf/usp1Y/hSqgI2vAGGP4jZMCxOU=
 modernc.org/mathutil v1.7.1/go.mod h1:4p5IwJITfppl0G4sUEDtCr4DthTaT47/N3aT6MhfgJg=
 modernc.org/memory v1.11.0 h1:o4QC8aMQzmcwCK3t3Ux/ZHmwFPzE6hf2Y5LbkRs+hbI=
