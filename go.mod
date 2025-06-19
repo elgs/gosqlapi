@@ -7,7 +7,7 @@ go 1.24.4
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
-	github.com/elgs/gosqlcrud v0.0.0-20250619002719-83cb3d1c3883
+	github.com/elgs/gosqlcrud v0.0.0-20250619052614-75c023daddb6
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/lib/pq v1.10.9
