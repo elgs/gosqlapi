@@ -4,8 +4,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 h1:Gfn+NcN3eAVFLXd9hN9sTd0vtsYXSGwVUKk6EHFVn3s=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906/go.mod h1:w1WVg5EhY8yy+53iAGOaUp4JxlmV24K3D21BpFgxqcY=
-github.com/elgs/gosqlcrud v0.0.0-20250619052614-75c023daddb6 h1:25E80rfpRjJrC5hI4pgXdtjTCLZJKAO1mAABj25NRtw=
-github.com/elgs/gosqlcrud v0.0.0-20250619052614-75c023daddb6/go.mod h1:sa1M38ArVFBqFa0ya4iwOTZ/SU9flHyuxBHfv2bvwKg=
+github.com/elgs/gosqlcrud v0.0.0-20250619054651-ba4d32f22e0c h1:a6UMtgjTF/ndKrQAvCCquYob0THPkD4yx6nd54aiyxg=
+github.com/elgs/gosqlcrud v0.0.0-20250619054651-ba4d32f22e0c/go.mod h1:sa1M38ArVFBqFa0ya4iwOTZ/SU9flHyuxBHfv2bvwKg=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
