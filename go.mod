@@ -1,5 +1,6 @@
 module github.com/elgs/gosqlapi
 
+go 1.24.4
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
@@ -16,15 +17,7 @@ require (
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-<<<<<<< HEAD
 	golang.org/x/exp v0.0.0-20250606033433-dcc06ee1d476 // indirect
-=======
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
-	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
-	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
->>>>>>> master
 	golang.org/x/sys v0.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.66.0 // indirect
