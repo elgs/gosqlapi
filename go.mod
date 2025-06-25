@@ -11,7 +11,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/lib/pq v1.10.9
-	github.com/microsoft/go-mssqldb v1.8.2
+	github.com/microsoft/go-mssqldb v1.9.1
 	github.com/sijms/go-ora/v2 v2.9.0
 	github.com/stretchr/testify v1.10.0
 	modernc.org/sqlite v1.38.0
