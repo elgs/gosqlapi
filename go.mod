@@ -1,10 +1,10 @@
 module github.com/elgs/gosqlapi
 
-go 1.24.4
+go 1.24.5
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
-	github.com/elgs/gosqlcrud v0.0.0-20250619054651-ba4d32f22e0c
+	github.com/elgs/gosqlcrud v0.0.0-20250710030829-26795a7b3f8d
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.10.0
 )
