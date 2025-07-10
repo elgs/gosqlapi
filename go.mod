@@ -1,10 +1,10 @@
 module github.com/elgs/gosqlapi
 
-go 1.24.4
+go 1.24.5
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
-	github.com/elgs/gosqlcrud v0.0.0-20250619054651-ba4d32f22e0c
+	github.com/elgs/gosqlcrud v0.0.0-20250710030829-26795a7b3f8d
 	github.com/stretchr/testify v1.10.0
 	modernc.org/sqlite v1.38.0
 )
@@ -18,9 +18,9 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.66.2 // indirect
+	modernc.org/libc v1.66.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )
