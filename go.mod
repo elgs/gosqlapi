@@ -1,6 +1,6 @@
 module github.com/elgs/gosqlapi
 
-go 1.24.5
+go 1.24.6
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
