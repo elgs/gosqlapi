@@ -9,22 +9,26 @@ The intention of `gosqlapi` is not to replace a full-fledged backend server, but
 Install `gosqlapi` with one of the following commands, depending on the databases you want to use:
 
 ### homebrew
+
 ```sh
 $ brew install elgs/taps/gosqlapi
 ```
 
-or, 
+or
+
 ```sh
 $ brew tap elgs/taps
 $ brew install gosqlapi
 ```
 
 ### AUR
+
 ```sh
 $ yay -S gosqlapi
 ```
 
 ### go install
+
 ```sh
 # Install gosqlapi for all databases.
 $ go install github.com/elgs/gosqlapi@all
@@ -70,6 +74,7 @@ $ gosqlapi -c /path/to/gosqlapi.json
 ```
 
 ## Change Log
+
 ### Version 43
 
 Previously HTTP PATCH method was used to execute pre-defined SQL queries. Now HTTP GET method can be used to execute pre-defined SQL queries, if the script name does not conflict with the table name. The HTTP PATCH method is still supported. The reason for this change is to allow caching of the pre-defined SQL queries. So use HTTP GET method to execute pre-defined SQL queries if you want to cache the results.
