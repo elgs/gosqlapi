@@ -17,8 +17,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 h1:Gfn+NcN3eAVFLXd9hN9sTd0vtsYXSGwVUKk6EHFVn3s=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906/go.mod h1:w1WVg5EhY8yy+53iAGOaUp4JxlmV24K3D21BpFgxqcY=
-github.com/elgs/gosqlcrud v0.0.0-20250908204924-85316794a26a h1:rCXRKXOgITALVoYiKSj2u+BkEgo7bd4bWIujgPBvmyk=
-github.com/elgs/gosqlcrud v0.0.0-20250908204924-85316794a26a/go.mod h1:FHt3+Hp11JEjmH72/Q7mcQuwRKZ0k+V5X7ob4TQx5m4=
+github.com/elgs/gosqlcrud v0.0.0-20250909060907-687b823a56a4 h1:bF6V1IK8ro/XKv/8brpFj6uRNXQT0PTQwIAdDRyaICo=
+github.com/elgs/gosqlcrud v0.0.0-20250909060907-687b823a56a4/go.mod h1:CFbL7OS4w/brXWdIP2C1rYFpS9nEGA11Oc3qb2nTvTY=
 github.com/golang-jwt/jwt/v5 v5.2.2 h1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=
 github.com/golang-jwt/jwt/v5 v5.2.2/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 h1:au07oEsX2xN0ktxqI+Sida1w446QrXBRJ0nee3SNZlA=
