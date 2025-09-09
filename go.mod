@@ -1,13 +1,13 @@
 module github.com/elgs/gosqlapi
 
-go 1.25.1
+go 1.25
 
 // replace github.com/elgs/gosplitargs => ../gosplitargs
 // replace github.com/elgs/gosqlcrud => ../gosqlcrud
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
-	github.com/elgs/gosqlcrud v0.0.0-20250908204924-85316794a26a
+	github.com/elgs/gosqlcrud v0.0.0-20250909060907-687b823a56a4
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/lib/pq v1.10.9
