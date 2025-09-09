@@ -8,7 +8,28 @@ The intention of `gosqlapi` is not to replace a full-fledged backend server, but
 
 Install `gosqlapi` with one of the following commands, depending on the databases you want to use:
 
-```bash
+### homebrew
+
+```sh
+$ brew install elgs/taps/gosqlapi
+```
+
+or
+
+```sh
+$ brew tap elgs/taps
+$ brew install gosqlapi
+```
+
+### AUR
+
+```sh
+$ yay -S gosqlapi
+```
+
+### go install
+
+```sh
 # Install gosqlapi for all databases.
 $ go install github.com/elgs/gosqlapi@all
 
@@ -34,12 +55,6 @@ $ go install github.com/elgs/gosqlapi@sqlite
 $ go install github.com/elgs/gosqlapi@latest
 ```
 
-To uninstall `gosqlapi`:
-
-```bash
-$ go clean -i github.com/elgs/gosqlapi
-```
-
 ### Download pre-built binaries
 
 If you don't have Go installed, you can download pre-built binaries from the [releases page](https://goweb.az.ht/gosqlapi/build/).
@@ -48,17 +63,18 @@ If you don't have Go installed, you can download pre-built binaries from the [re
 
 If you have a `gosqlapi.json` file in the current directory:
 
-```bash
+```sh
 $ gosqlapi
 ```
 
 or if you don't have `gosqlapi.json` in the current directory:
 
-```bash
+```sh
 $ gosqlapi -c /path/to/gosqlapi.json
 ```
 
 ## Change Log
+
 ### Version 43
 
 Previously HTTP PATCH method was used to execute pre-defined SQL queries. Now HTTP GET method can be used to execute pre-defined SQL queries, if the script name does not conflict with the table name. The HTTP PATCH method is still supported. The reason for this change is to allow caching of the pre-defined SQL queries. So use HTTP GET method to execute pre-defined SQL queries if you want to cache the results.
@@ -122,7 +138,7 @@ SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
 
 #### Run a pre-defined SQL query
 
-```bash
+```sh
 $ curl -X PATCH 'http://localhost:8080/test_db/init/' \
   --header 'Content-Type: application/json' \
   --data-raw '{
@@ -142,7 +158,7 @@ $ curl -X PATCH 'http://localhost:8080/test_db/init/' \
 
 #### Get a record
 
-```bash
+```sh
 $ curl -X GET 'http://localhost:8080/test_db/test_table/1'
 ```
 
@@ -152,7 +168,7 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table/1'
 
 #### Create a new record
 
-```bash
+```sh
 $ curl -X POST 'http://localhost:8080/test_db/test_table' \
   --header 'Content-Type: application/json' \
   --data-raw '{
@@ -167,7 +183,7 @@ $ curl -X POST 'http://localhost:8080/test_db/test_table' \
 
 #### Update a record
 
-```bash
+```sh
 $ curl -X PUT 'http://localhost:8080/test_db/test_table/4' \
   --header 'Content-Type: application/json' \
   --data-raw '{
@@ -181,7 +197,7 @@ $ curl -X PUT 'http://localhost:8080/test_db/test_table/4' \
 
 #### Delete a record
 
-```bash
+```sh
 $ curl -X DELETE 'http://localhost:8080/test_db/test_table/4'
 ```
 
@@ -207,7 +223,7 @@ If the table's primary key is not `ID`, you can specify the primary key for a ta
 
 #### Search for records
 
-```bash
+```sh
 $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 ```
 
@@ -217,7 +233,7 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=Beta'
 
 #### Search for records with .page_size, .offset and .order_by
 
-```bash
+```sh
 $ curl --request GET \
   --url 'http://localhost:8080/test_db/test_table?.page_size=2&.offset=1&.show_total=1'
 ```
@@ -280,7 +296,7 @@ You can pass SQL `NULL` from URL parameters by setting `null_value` in `gosqlapi
 
 Then you can pass `null` from URL parameters:
 
-```bash
+```sh
 $ curl -X GET 'http://localhost:8080/test_db/test_table?name=null'
 ```
 
@@ -485,7 +501,7 @@ When both `sql` and `path` are defined, `path` will be used, and `sql` will be i
 
 When the server is running in dev mode, the server will not cache the scripts and will reload the scripts every time a request is made. This is useful when you are editing the scripts so that you don't have to restart the server every time you make a change. To run the server in dev mode, set the `env` environment variable to `dev` when starting the server:
 
-```bash
+```sh
 $ env=dev gosqlapi
 ```
 
@@ -632,7 +648,7 @@ If you don't want to expose the database password in the `gosqlapi.json` file, y
 
 The environment variables `db_type` and `db_url` will be used to configure the database.
 
-```bash
+```sh
 $ db_type=sqlite db_url=./test_db.sqlite3 gosqlapi
 ```
 
@@ -718,7 +734,7 @@ $ sudo systemctl status gosqlapi
 
 Because I cannot get cross compile to work for Windows ARM64. If you have a clue, please let me know. Thanks. If you are a macOS or Linux user, you can still use mattn/go-sqlite3 by:
 
-```bash
+```sh
 $ git clone https://github.com/elgs/gosqlapi
 $ cd gosqlapi
 $ git checkout sqlite3
