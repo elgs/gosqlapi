@@ -19,6 +19,11 @@ $ brew tap elgs/taps
 $ brew install gosqlapi
 ```
 
+### AUR
+```sh
+$ yay -S gosqlapi
+```
+
 ### go install
 ```sh
 # Install gosqlapi for all databases.
