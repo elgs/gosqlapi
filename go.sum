@@ -6,8 +6,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906 h1:Gfn+NcN3eAVFLXd9hN9sTd0vtsYXSGwVUKk6EHFVn3s=
 github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906/go.mod h1:w1WVg5EhY8yy+53iAGOaUp4JxlmV24K3D21BpFgxqcY=
-github.com/elgs/gosqlcrud v0.0.0-20250909060907-687b823a56a4 h1:bF6V1IK8ro/XKv/8brpFj6uRNXQT0PTQwIAdDRyaICo=
-github.com/elgs/gosqlcrud v0.0.0-20250909060907-687b823a56a4/go.mod h1:CFbL7OS4w/brXWdIP2C1rYFpS9nEGA11Oc3qb2nTvTY=
+github.com/elgs/gosqlcrud v0.0.0-20250910094801-55167c4527dc h1:UtauPRQ5tbipqNdyvot5eb8z5XLEtP9TQ2VHpiVNO9U=
+github.com/elgs/gosqlcrud v0.0.0-20250910094801-55167c4527dc/go.mod h1:CFbL7OS4w/brXWdIP2C1rYFpS9nEGA11Oc3qb2nTvTY=
 github.com/go-sql-driver/mysql v1.9.3 h1:U/N249h2WzJ3Ukj8SowVFjdtZKfu9vlLZxjPXV1aweo=
 github.com/go-sql-driver/mysql v1.9.3/go.mod h1:qn46aNg1333BRMNU69Lq93t8du/dwxI64Gl8i5p1WMU=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
