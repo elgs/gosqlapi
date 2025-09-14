@@ -51,8 +51,6 @@ func TestAPITestSuite(t *testing.T) {
 			config:     config,
 		})
 	}
-	fmt.Println("Press Ctrl+C to exit.")
-	Hook(nil)
 }
 
 func (this *APITestSuite) SetupSuite() {
@@ -62,7 +60,7 @@ func (this *APITestSuite) SetupSuite() {
 	this.Nil(err)
 	this.app.Web.HttpAddr = this.serverAddr
 	go this.app.run()
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 5)
 }
 
 func (this *APITestSuite) TearDownSuite() {
