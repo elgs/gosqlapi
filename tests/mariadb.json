@@ -24,7 +24,7 @@
     },
     "list_tables": {
       "database": "test_db",
-      "sql": "SELECT table_name as name FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_name",
+      "sql": "SELECT table_name as name FROM information_schema.tables WHERE table_schema = DATABASE() and table_name like 'TEST_GOSQLAPI%' ORDER BY table_name",
       "public_exec": true
     },
     "list_columns": {
@@ -36,13 +36,13 @@
   "tables": {
     "test_table": {
       "database": "test_db",
-      "name": "TEST_TABLE",
+      "name": "TEST_GOSQLAPI",
       "public_read": true,
       "public_write": true
     },
     "token_table": {
       "database": "test_db",
-      "name": "TOKENS"
+      "name": "TEST_GOSQLAPI_TOKENS"
     }
   },
   "managed_tokens": {

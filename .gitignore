@@ -17,5 +17,5 @@
 tmp/
 build/
 
-test.sh
+.envrc
 run.sh
