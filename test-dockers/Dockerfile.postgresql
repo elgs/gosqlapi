@@ -1,0 +1,14 @@
+FROM postgres:16
+
+# Set environment variables for database, user, and password
+ENV POSTGRES_DB=test_db
+ENV POSTGRES_USER=test_user
+ENV POSTGRES_PASSWORD=TestPass123!
+
+
+
+
+# No need for a custom CMD; the official image will create the DB and user automatically
+
+# docker build -f Dockerfile.postgresql -t gosqlapi-test-postgresql .
+# docker run --name gosqlapi-test-postgresql -p 15432:5432 -d gosqlapi-test-postgresql
