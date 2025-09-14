@@ -19,3 +19,4 @@ build/
 
 .envrc
 run.sh
+test-dockers/
