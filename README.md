@@ -21,7 +21,7 @@ $ brew tap elgs/taps
 $ brew install gosqlapi
 ```
 
-### AUR
+### Arch Linux (AUR)
 
 ```sh
 $ yay -S gosqlapi

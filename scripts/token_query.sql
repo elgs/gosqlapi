@@ -5,5 +5,5 @@ SELECT
     WRITE_PRIVATE AS write_private,
     EXEC_PRIVATE AS exec_private,
     ALLOWED_ORIGINS AS allowed_origins
-FROM TOKENS
+FROM TEST_GOSQLAPI_TOKENS
 WHERE TOKEN = ?token?;
