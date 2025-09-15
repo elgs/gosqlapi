@@ -1,0 +1,37 @@
+FROM mcr.microsoft.com/mssql/server:2022-latest
+
+
+ENV ACCEPT_EULA=Y
+# MSSQL SA password
+ENV MSSQL_SA_PASSWORD=TestPass123!
+# Database name
+ENV MSSQL_DB=test_db
+# SQL statement to create the database
+ENV MSSQL_CREATE_DB_STMT="CREATE DATABASE $MSSQL_DB;"
+
+
+# Switch to root to install tools
+USER root
+RUN apt-get update \
+    && apt-get install -y curl apt-transport-https gnupg2 ca-certificates \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/microsoft.gpg \
+    && chmod go+r /etc/apt/keyrings/microsoft.gpg \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+ENV PATH="$PATH:/opt/mssql-tools18/bin"
+
+# Switch back to mssql user
+USER mssql
+
+CMD /opt/mssql/bin/sqlservr & \
+    sleep 20 && \
+    echo "$MSSQL_CREATE_DB_STMT" | /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "$MSSQL_SA_PASSWORD" -C && \
+    wait
+
+
+# docker build -f Dockerfile.mssql -t gosqlapi-test-mssql .
+# docker run --name gosqlapi-test-mssql -p 11433:1433 -d gosqlapi-test-mssql

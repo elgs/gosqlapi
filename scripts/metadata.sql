@@ -9,4 +9,4 @@ SELECT
 !referer! as "REFERER",
 !accept! as "ACCEPT",
 !AUThorization! as "AUTHORIZATION"
-FROM TEST_TABLE;
+FROM TEST_GOSQLAPI;
