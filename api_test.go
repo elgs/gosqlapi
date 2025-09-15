@@ -51,8 +51,6 @@ func TestAPITestSuite(t *testing.T) {
 			config:     config,
 		})
 	}
-	fmt.Println("Press Ctrl+C to exit.")
-	Hook(nil)
 }
 
 func (this *APITestSuite) SetupSuite() {
@@ -62,7 +60,7 @@ func (this *APITestSuite) SetupSuite() {
 	this.Nil(err)
 	this.app.Web.HttpAddr = this.serverAddr
 	go this.app.run()
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 5)
 }
 
 func (this *APITestSuite) TearDownSuite() {
@@ -302,8 +300,8 @@ func (this *APITestSuite) testAPI(usePatch bool) {
 	var respBody8 []any
 	err = json.Unmarshal(body, &respBody8)
 	this.Nil(err)
-	this.Assert().Equal("TEST_TABLE", strings.ToUpper(respBody8[0].(map[string]any)["name"].(string)))
-	this.Assert().Equal("TOKENS", strings.ToUpper(respBody8[1].(map[string]any)["name"].(string)))
+	this.Assert().Equal("TEST_GOSQLAPI", strings.ToUpper(respBody8[0].(map[string]any)["name"].(string)))
+	this.Assert().Equal("TEST_GOSQLAPI_TOKENS", strings.ToUpper(respBody8[1].(map[string]any)["name"].(string)))
 
 	count--
 	fmt.Println("-------------------------------------------------------------", count)

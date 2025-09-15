@@ -1,0 +1,12 @@
+FROM mariadb:11.4
+
+# Set environment variables for database, user, and password
+ENV MARIADB_DATABASE=test_db
+ENV MARIADB_USER=test_user
+ENV MARIADB_PASSWORD=TestPass123!
+ENV MARIADB_ROOT_PASSWORD=RootPass123!
+
+# No need for a custom CMD; the official image will create the DB and user automatically
+
+# docker build -f Dockerfile.mariadb -t gosqlapi-test-mariadb .
+# docker run --name gosqlapi-test-mariadb -p 13307:3306 -d gosqlapi-test-mariadb
