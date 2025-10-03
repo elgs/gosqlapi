@@ -1,4 +1,4 @@
-FROM mariadb:11.4
+FROM mariadb:latest
 
 # Set environment variables for database, user, and password
 ENV MARIADB_DATABASE=test_db
