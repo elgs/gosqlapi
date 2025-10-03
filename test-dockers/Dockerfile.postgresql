@@ -1,4 +1,4 @@
-FROM postgres:16
+FROM postgres:latest
 
 # Set environment variables for database, user, and password
 ENV POSTGRES_DB=test_db
