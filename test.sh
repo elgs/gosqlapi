@@ -7,6 +7,11 @@
 # export pgx_url="postgres://test_user:TestPass123!@localhost:15432/test_db"
 # export sqlserver_url="sqlserver://sa:TestPass123!@localhost:11433?database=test_db"
 
+docker build -t gosqlapi-test-mysql -f ./test-dockers/Dockerfile.mysql .
+docker build -t gosqlapi-test-mariadb -f ./test-dockers/Dockerfile.mariadb .
+docker build -t gosqlapi-test-postgresql -f ./test-dockers/Dockerfile.postgresql .
+docker build -t gosqlapi-test-mssql -f ./test-dockers/Dockerfile.mssql .
+
 docker run --name gosqlapi-test-mysql -p 13306:3306 -d gosqlapi-test-mysql
 docker run --name gosqlapi-test-mariadb -p 13307:3306 -d gosqlapi-test-mariadb
 docker run --name gosqlapi-test-postgresql -p 15432:5432 -d gosqlapi-test-postgresql
