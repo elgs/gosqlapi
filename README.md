@@ -1,12 +1,16 @@
 # gosqlapi
 
-Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB, PostgreSQL, Oracle, Microsoft SQL Server and SQLite.
+Turns any SQL database into a RESTful API. Currently supports MySQL, MariaDB,
+PostgreSQL, Oracle, Microsoft SQL Server and SQLite.
 
-The intention of `gosqlapi` is not to replace a full-fledged backend server, but to provide a quick and easy way to expose any SQL databases as a RESTful API without writing any server code, except for only SQL scripts.
+The intention of `gosqlapi` is not to replace a full-fledged backend server, but
+to provide a quick and easy way to expose any SQL databases as a RESTful API
+without writing any server code, except for only SQL scripts.
 
 ## Installation
 
-Install `gosqlapi` with one of the following commands, depending on the databases you want to use:
+Install `gosqlapi` with one of the following commands, depending on the
+databases you want to use:
 
 ### homebrew
 
@@ -57,7 +61,8 @@ $ go install github.com/elgs/gosqlapi@latest
 
 ### Download pre-built binaries
 
-If you don't have Go installed, you can download pre-built binaries from the [releases page](https://goweb.az.ht/gosqlapi/build/).
+If you don't have Go installed, you can download pre-built binaries from the
+[releases page](https://goweb.az.ht/gosqlapi/build/).
 
 ## Usage
 
@@ -77,13 +82,19 @@ $ gosqlapi -c /path/to/gosqlapi.json
 
 ### Version 43
 
-Previously HTTP PATCH method was used to execute pre-defined SQL queries. Now HTTP GET method can be used to execute pre-defined SQL queries, if the script name does not conflict with the table name. The HTTP PATCH method is still supported. The reason for this change is to allow caching of the pre-defined SQL queries. So use HTTP GET method to execute pre-defined SQL queries if you want to cache the results.
+Previously HTTP PATCH method was used to execute pre-defined SQL queries. Now
+HTTP GET method can be used to execute pre-defined SQL queries, if the script
+name does not conflict with the table name. The HTTP PATCH method is still
+supported. The reason for this change is to allow caching of the pre-defined SQL
+queries. So use HTTP GET method to execute pre-defined SQL queries if you want
+to cache the results.
 
 ## Hello World
 
 ### On the server side
 
-Prepare `gosqlapi.json` and `init.sql` in the current directory, and run `gosqlapi`:
+Prepare `gosqlapi.json` and `init.sql` in the current directory, and run
+`gosqlapi`:
 
 `gosqlapi.json`:
 
@@ -207,7 +218,8 @@ $ curl -X DELETE 'http://localhost:8080/test_db/test_table/4'
 
 #### Primary Key
 
-If the table's primary key is not `ID`, you can specify the primary key for a table in the `gosqlapi.json` file:
+If the table's primary key is not `ID`, you can specify the primary key for a
+table in the `gosqlapi.json` file:
 
 ```json
 {
@@ -263,7 +275,8 @@ You can use the following parameters:
 - `.order_by`: order the records returned
 - `.show_total`: show the total number of records
 
-You can give a table a default `page_size`, `order_by`, `show_total` and `exported_columns` by setting `page_size` and `order_by` in `gosqlapi.json`:
+You can give a table a default `page_size`, `order_by`, `show_total` and
+`exported_columns` by setting `page_size` and `order_by` in `gosqlapi.json`:
 
 ```json
 {
@@ -286,7 +299,8 @@ if `exported_columns` is not set or is empty, all columns will be exported.
 
 ### Passing SQL `NULL` from URL parameters
 
-You can pass SQL `NULL` from URL parameters by setting `null_value` in `gosqlapi.json`. For example:
+You can pass SQL `NULL` from URL parameters by setting `null_value` in
+`gosqlapi.json`. For example:
 
 ```json
 {
@@ -306,9 +320,14 @@ $ curl -X GET 'http://localhost:8080/test_db/test_table?name=null'
 
 ## Access Control
 
-When a script has `public_exec` set to true, it can be executed by public users. When a table has `public_read` set to true, it can be read by public users. When a table has `public_write` set to true, it can be written by public users.
+When a script has `public_exec` set to true, it can be executed by public users.
+When a table has `public_read` set to true, it can be read by public users. When
+a table has `public_write` set to true, it can be written by public users.
 
-When a script or table is set to not be accessible by public users, an auth token is required to access the script or table. The client should send the auth token back to the server in the `Authorization` header. The server will verify the auth token and return an error if the auth token is invalid.
+When a script or table is set to not be accessible by public users, an auth
+token is required to access the script or table. The client should send the auth
+token back to the server in the `Authorization` header. The server will verify
+the auth token and return an error if the auth token is invalid.
 
 ### Simple Tokens
 
@@ -335,9 +354,14 @@ Simple tokens are configured in `gosqlapi.json`:
 }
 ```
 
-In the example above, the auth token is configured to allow users to read and write `test_table` and execute `init` script in `test_db`.
+In the example above, the auth token is configured to allow users to read and
+write `test_table` and execute `init` script in `test_db`.
 
-The `allowed_origins` field is optional. If it is set, the server will only allow requests from the specified origins. It checks the `Origin` or `Referer` header to determine the origin of the request. If it is not set, it will reject all requests. If it is set to `*`, it will allow requests from all origins or referers.
+The `allowed_origins` field is optional. If it is set, the server will only
+allow requests from the specified origins. It checks the `Origin` or `Referer`
+header to determine the origin of the request. If it is not set, it will reject
+all requests. If it is set to `*`, it will allow requests from all origins or
+referers.
 
 You can use `*` to match all databases or all target objects:
 
@@ -363,7 +387,8 @@ This token will have super power.
 
 #### Token Table
 
-Managed tokens are stored in the database. The table and database that will store managed tokens are configured as `managed_tokens` in `gosqlapi.json`.
+Managed tokens are stored in the database. The table and database that will
+store managed tokens are configured as `managed_tokens` in `gosqlapi.json`.
 
 ```json
 {
@@ -392,11 +417,16 @@ CREATE TABLE IF NOT EXISTS `TOKENS` (
 create INDEX TOKEN_INDEX ON TOKENS (TOKEN);
 ```
 
-Please feel free to change the ID to a different type, such as `INT`, or add more columns to the table. The only requirement is that the table should have the required columns listed above. Also consider adding an index to the `TOKEN` column.
+Please feel free to change the ID to a different type, such as `INT`, or add
+more columns to the table. The only requirement is that the table should have
+the required columns listed above. Also consider adding an index to the `TOKEN`
+column.
 
-When `managed_tokens` is configured in `gosqlapi.json`, the `tokens` in `gosqlapi.json` will be ignored.
+When `managed_tokens` is configured in `gosqlapi.json`, the `tokens` in
+`gosqlapi.json` will be ignored.
 
-If you already have a table that stores managed tokens, you can map the fields in that token table as follows:
+If you already have a table that stores managed tokens, you can map the fields
+in that token table as follows:
 
 ```json
 {
@@ -414,11 +444,13 @@ If you already have a table that stores managed tokens, you can map the fields i
 }
 ```
 
-For example, if your token table has the field `AUTH_TOKEN` instead of `TOKEN`, you can use the configuration above to map the field `AUTH_TOKEN` to `TOKEN`.
+For example, if your token table has the field `AUTH_TOKEN` instead of `TOKEN`,
+you can use the configuration above to map the field `AUTH_TOKEN` to `TOKEN`.
 
 #### Token Query
 
-Instead of specifying the `table_name`, you can use a `query` in the config. The `query` should return the same columns as the token table.
+Instead of specifying the `table_name`, you can use a `query` in the config. The
+`query` should return the same columns as the token table.
 
 ```json
 {
@@ -429,7 +461,8 @@ Instead of specifying the `table_name`, you can use a `query` in the config. The
 }
 ```
 
-The placeholder will be replaced with the auth token. If the `query` is getting too long, you can use a separate file to store the query.
+The placeholder will be replaced with the auth token. If the `query` is getting
+too long, you can use a separate file to store the query.
 
 ```json
 {
@@ -442,7 +475,9 @@ The placeholder will be replaced with the auth token. If the `query` is getting 
 
 #### Cache Managed Tokens
 
-In production, you may want to cache the managed tokens in memory. To enable caching, set `cache_tokens` to `true` in `gosqlapi.json`. This will prevent the server from querying the database for tokens for every request.
+In production, you may want to cache the managed tokens in memory. To enable
+caching, set `cache_tokens` to `true` in `gosqlapi.json`. This will prevent the
+server from querying the database for tokens for every request.
 
 ```json
 {
@@ -450,7 +485,8 @@ In production, you may want to cache the managed tokens in memory. To enable cac
 }
 ```
 
-When any token is updated, an update to the cache is necessary. To update the token cache, send a POST request to `/.clear-tokens` with the following header:
+When any token is updated, an update to the cache is necessary. To update the
+token cache, send a POST request to `/.clear-tokens` with the following header:
 
 ```
 Authorization: Bearer <auth token>
@@ -458,7 +494,8 @@ Authorization: Bearer <auth token>
 
 ## Pre-defined SQL Queries
 
-There are a few things to note when defining a pre-defined SQL query in a script:
+There are a few things to note when defining a pre-defined SQL query in a
+script:
 
 ```sql
 drop TABLE IF EXISTS TEST_TABLE;
@@ -475,14 +512,25 @@ insert INTO TEST_TABLE (ID, NAME) VALUES (3, 'Gamma');
 SELECT * FROM TEST_TABLE WHERE ID > ?low? AND ID < ?high?;
 ```
 
-1. You can define multiple SQL statements in a single script. The statements will be executed in the order they appear in the script. The script will be executed in a transaction. If any statement fails, the transaction will be rolled back, and if all statements succeed, the transaction will be committed. Statements in the script are separated by `;`.
-2. The results of the statements that start with an uppercase letter will be returned to the client. The results of the statements that start with a lowercase letter will not be returned to the client.
-3. You can label a statement with `-- @label: label_name`. The `label_name` will be the key of the result in the returned JSON object.
-4. You can use `?param_name?` to define a parameter. The `param_name` will be the key of the parameter in the JSON object sent to the server.
+1. You can define multiple SQL statements in a single script. The statements
+   will be executed in the order they appear in the script. The script will be
+   executed in a transaction. If any statement fails, the transaction will be
+   rolled back, and if all statements succeed, the transaction will be
+   committed. Statements in the script are separated by `;`.
+2. The results of the statements that start with an uppercase letter will be
+   returned to the client. The results of the statements that start with a
+   lowercase letter will not be returned to the client.
+3. You can label a statement with `-- @label: label_name`. The `label_name` will
+   be the key of the result in the returned JSON object.
+4. You can use `?param_name?` to define a parameter. The `param_name` will be
+   the key of the parameter in the JSON object sent to the server.
 
 ### Inline scripts
 
-You have the option to define a script inline in the `gosqlapi.json` file. This is useful when you want to define a script that is short or you don't want to create a separate file for the script. The script can be defined in the `gosqlapi.json` file as follows:
+You have the option to define a script inline in the `gosqlapi.json` file. This
+is useful when you want to define a script that is short or you don't want to
+create a separate file for the script. The script can be defined in the
+`gosqlapi.json` file as follows:
 
 ```json
 {
@@ -495,23 +543,34 @@ You have the option to define a script inline in the `gosqlapi.json` file. This 
 }
 ```
 
-When both `sql` and `path` are defined, `path` will be used, and `sql` will be ignored.
+When both `sql` and `path` are defined, `path` will be used, and `sql` will be
+ignored.
 
 ### Edit scripts in dev mode
 
-When the server is running in dev mode, the server will not cache the scripts and will reload the scripts every time a request is made. This is useful when you are editing the scripts so that you don't have to restart the server every time you make a change. To run the server in dev mode, set the `env` environment variable to `dev` when starting the server:
+When the server is running in dev mode, the server will not cache the scripts
+and will reload the scripts every time a request is made. This is useful when
+you are editing the scripts so that you don't have to restart the server every
+time you make a change. To run the server in dev mode, set the `env` environment
+variable to `dev` when starting the server:
 
 ```sh
 $ env=dev gosqlapi
 ```
 
-`dev` mode is only effective for scripts defined in `gosqlapi.json` by `path`. For scripts defined in `gosqlapi.json` by `sql`, `dev` mode will not be effective.
+`dev` mode is only effective for scripts defined in `gosqlapi.json` by `path`.
+For scripts defined in `gosqlapi.json` by `sql`, `dev` mode will not be
+effective.
 
-Do not use dev mode in production, as it will read the scripts from the disk every time a request is made.
+Do not use dev mode in production, as it will read the scripts from the disk
+every time a request is made.
 
 ## Request Metadata in Pre-defined SQL Queries
 
-You can access the request metadata in pre-defined SQL queries. The request metadata includes the request method, the request path, the request query string, and the request headers. The request metadata can be accessed in the pre-defined SQL queries as follows:
+You can access the request metadata in pre-defined SQL queries. The request
+metadata includes the request method, the request path, the request query
+string, and the request headers. The request metadata can be accessed in the
+pre-defined SQL queries as follows:
 
 ```sql
 SELECT
@@ -526,7 +585,8 @@ SELECT
 !AUThorization! as "AUTHORIZATION";
 ```
 
-The request metadata parameters are case-insensitive. The request metadata parameters are surrounded by `!` characters.
+The request metadata parameters are case-insensitive. The request metadata
+parameters are surrounded by `!` characters.
 
 ## Database Configuration
 
@@ -633,7 +693,9 @@ https://github.com/sijms/go-ora
 
 ### Store passwords in environment variables
 
-If you don't want to expose the database password in the `gosqlapi.json` file, you can store the password in an environment variable and reference the environment variable in the `gosqlapi.json` file with `env:`. For example:
+If you don't want to expose the database password in the `gosqlapi.json` file,
+you can store the password in an environment variable and reference the
+environment variable in the `gosqlapi.json` file with `env:`. For example:
 
 ```json
 {
@@ -646,7 +708,8 @@ If you don't want to expose the database password in the `gosqlapi.json` file, y
 }
 ```
 
-The environment variables `db_type` and `db_url` will be used to configure the database.
+The environment variables `db_type` and `db_url` will be used to configure the
+database.
 
 ```sh
 $ db_type=sqlite db_url=./test_db.sqlite3 gosqlapi
@@ -670,7 +733,8 @@ Here is an example of how to configure HTTPS:
 
 ## Custom HTTP Headers
 
-You can add custom HTTP headers to the response. For example, you can add the following to the `gosqlapi.json` file:
+You can add custom HTTP headers to the response. For example, you can add the
+following to the `gosqlapi.json` file:
 
 ```json
 {
@@ -686,7 +750,8 @@ You can add custom HTTP headers to the response. For example, you can add the fo
 
 ## Auto start with systemd
 
-Create service unit file `/etc/systemd/system/gosqlapi.service` with the following content:
+Create service unit file `/etc/systemd/system/gosqlapi.service` with the
+following content:
 
 ```
 [Unit]
@@ -732,7 +797,9 @@ $ sudo systemctl status gosqlapi
 
 ## Why is mattn/go-sqlite3 removed
 
-Because I cannot get cross compile to work for Windows ARM64. If you have a clue, please let me know. Thanks. If you are a macOS or Linux user, you can still use mattn/go-sqlite3 by:
+Because I cannot get cross compile to work for Windows ARM64. If you have a
+clue, please let me know. Thanks. If you are a macOS or Linux user, you can
+still use mattn/go-sqlite3 by:
 
 ```sh
 $ git clone https://github.com/elgs/gosqlapi
@@ -749,20 +816,19 @@ MIT License
 
 Copyright (c) 2024 Qian Chen
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
