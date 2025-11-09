@@ -1,12 +1,5 @@
 #!/usr/bin/env sh
 
-# export test_all=1
-# export mysql_url="test_user:TestPass123!@tcp(127.0.0.1:13306)/test_db"
-# export mariadb_url="test_user:TestPass123!@tcp(127.0.0.1:13307)/test_db"
-# export postgres_url="postgres://test_user:TestPass123!@localhost:15432/test_db?sslmode=disable"
-# export pgx_url="postgres://test_user:TestPass123!@localhost:15432/test_db"
-# export sqlserver_url="sqlserver://sa:TestPass123!@localhost:11433?database=test_db"
-
 docker build -t gosqlapi-test-mysql -f ./test-dockers/Dockerfile.mysql .
 docker build -t gosqlapi-test-mariadb -f ./test-dockers/Dockerfile.mariadb .
 docker build -t gosqlapi-test-postgresql -f ./test-dockers/Dockerfile.postgresql .
