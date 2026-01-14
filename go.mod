@@ -14,7 +14,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.9.5
 	github.com/sijms/go-ora/v2 v2.9.0
 	github.com/stretchr/testify v1.11.1
-	modernc.org/sqlite v1.43.0
+	modernc.org/sqlite v1.44.0
 )
 
 require (
@@ -36,6 +36,7 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
+	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
