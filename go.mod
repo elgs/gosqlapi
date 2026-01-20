@@ -6,7 +6,7 @@ require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
 	github.com/elgs/gosqlcrud v0.0.0-20250910094801-55167c4527dc
 	github.com/stretchr/testify v1.11.1
-	modernc.org/sqlite v1.44.1
+	modernc.org/sqlite v1.44.2
 )
 
 require (
