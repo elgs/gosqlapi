@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 
-docker build -t gosqlapi-test-mysql -f ./test-dockers/Dockerfile.mysql .
-docker build -t gosqlapi-test-mariadb -f ./test-dockers/Dockerfile.mariadb .
-docker build -t gosqlapi-test-postgresql -f ./test-dockers/Dockerfile.postgresql .
-docker build -t gosqlapi-test-mssql -f ./test-dockers/Dockerfile.mssql .
+# docker build -t gosqlapi-test-mysql -f ./test-dockers/Dockerfile.mysql .
+# docker build -t gosqlapi-test-mariadb -f ./test-dockers/Dockerfile.mariadb .
+# docker build -t gosqlapi-test-postgresql -f ./test-dockers/Dockerfile.postgresql .
+# docker build -t gosqlapi-test-mssql -f ./test-dockers/Dockerfile.mssql .
 
-sleep 5
+# sleep 5
 
 docker run --name gosqlapi-test-mysql -p 13306:3306 -d gosqlapi-test-mysql
 docker run --name gosqlapi-test-mariadb -p 13307:3306 -d gosqlapi-test-mariadb
