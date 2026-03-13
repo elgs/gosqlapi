@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/elgs/gosplitargs"
 	"github.com/elgs/gosqlcrud"
@@ -40,12 +41,15 @@ func (this *App) run() {
 
 	if this.Web.HttpAddr != "" {
 		this.Web.httpServer = &http.Server{
-			Addr:    this.Web.HttpAddr,
-			Handler: mux,
+			Addr:         this.Web.HttpAddr,
+			Handler:      mux,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			IdleTimeout:  120 * time.Second,
 		}
 		go func() {
 			err := this.Web.httpServer.ListenAndServe()
-			if err != nil {
+			if err != nil && err != http.ErrServerClosed {
 				log.Fatalf("Failed to listen on http://%s/, %v\n", this.Web.HttpAddr, err)
 			}
 		}()
@@ -54,12 +58,15 @@ func (this *App) run() {
 
 	if this.Web.HttpsAddr != "" {
 		this.Web.httpsServer = &http.Server{
-			Addr:    this.Web.HttpsAddr,
-			Handler: mux,
+			Addr:         this.Web.HttpsAddr,
+			Handler:      mux,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			IdleTimeout:  120 * time.Second,
 		}
 		go func() {
 			err := this.Web.httpsServer.ListenAndServeTLS(this.Web.CertFile, this.Web.KeyFile)
-			if err != nil {
+			if err != nil && err != http.ErrServerClosed {
 				log.Fatalf("Failed to listen on https://%s/, %v\n", this.Web.HttpsAddr, err)
 			}
 		}()
@@ -68,11 +75,13 @@ func (this *App) run() {
 }
 
 func (this *App) shutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	if this.Web.httpServer != nil {
-		this.Web.httpServer.Shutdown(context.Background())
+		this.Web.httpServer.Shutdown(ctx)
 	}
 	if this.Web.httpsServer != nil {
-		this.Web.httpsServer.Shutdown(context.Background())
+		this.Web.httpsServer.Shutdown(ctx)
 	}
 }
 
@@ -214,7 +223,7 @@ func (this *App) buildTokenQuery() error {
 			this.ManagedTokens.AllowedOrigins = "ALLOWED_ORIGINS"
 		}
 
-		this.ManagedTokens.Query = fmt.Sprintf(`SELECT 
+		this.ManagedTokens.Query = fmt.Sprintf(`SELECT
 			%s AS "target_database",
 			%s AS "target_objects",
 			%s AS "read_private",
@@ -227,8 +236,8 @@ func (this *App) buildTokenQuery() error {
 			this.ManagedTokens.ReadPrivate,
 			this.ManagedTokens.WritePrivate,
 			this.ManagedTokens.ExecPrivate,
-			this.ManagedTokens.TableName,
 			this.ManagedTokens.AllowedOrigins,
+			this.ManagedTokens.TableName,
 			this.ManagedTokens.Token)
 	}
 	tokenDb, err := this.GetDatabase(this.ManagedTokens.Database)
@@ -280,7 +289,9 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	databaseId := r.PathValue("db")
 
 	if this.CacheTokens && databaseId == ".clear-tokens" && authorization != "" {
+		this.tokenCacheMu.Lock()
 		delete(this.tokenCache, authorization)
+		this.tokenCacheMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success":"token cleared"}`)
 		return
@@ -288,7 +299,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	database, err := this.GetDatabase(databaseId)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
@@ -302,7 +313,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(origin, "http://") || strings.HasPrefix(origin, "https://") {
 		originUrl, err := url.Parse(origin)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 			return
 		}
@@ -311,7 +322,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(referer, "http://") || strings.HasPrefix(referer, "https://") {
 		refererUrl, err := url.Parse(referer)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 			return
 		}
@@ -326,17 +337,23 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
 	defer r.Body.Close()
 	var bodyData map[string]any
-	json.Unmarshal(body, &bodyData)
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &bodyData); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, `{"error":"invalid JSON in request body"}`)
+			return
+		}
+	}
 
 	paramValues, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
@@ -350,7 +367,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
 		if script == nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, `{"error":"script %s not found"}`, objectId)
 			return
 		}
@@ -363,7 +380,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
-				w.WriteHeader(http.StatusForbidden)
+				w.WriteHeader(http.StatusBadRequest)
 				fmt.Fprintf(w, `{"error":"script %s is empty"}`, objectId)
 				return
 			}
@@ -371,7 +388,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 			if script.Path != "" {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
-					w.WriteHeader(http.StatusForbidden)
+					w.WriteHeader(http.StatusInternalServerError)
 					fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 					return
 				}
@@ -380,7 +397,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = database.BuildStatements(script)
 			if err != nil {
-				w.WriteHeader(http.StatusForbidden)
+				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 				return
 			}
@@ -389,7 +406,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		result, err = runExec(database, script, params, r)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 			return
 		}
@@ -397,13 +414,13 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		dataId := r.PathValue("key")
 		table := this.Tables[objectId]
 		if table == nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, `{"error":"table %s not found"}`, objectId)
 			return
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 			return
 		}
@@ -420,7 +437,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
 		return
 	}
@@ -457,7 +474,10 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 
 	// managed tokens
 	if this.ManagedTokens != nil {
-		if x, ok := this.tokenCache[authorization]; ok {
+		this.tokenCacheMu.RLock()
+		x, ok := this.tokenCache[authorization]
+		this.tokenCacheMu.RUnlock()
+		if ok {
 			return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 		}
 		managedTokensDatabase, err := this.GetDatabase(this.ManagedTokens.Database)
@@ -479,11 +499,13 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 			access.TargetObjectArray = strings.Fields(access.TargetObjects)
 			access.AllowedOriginArray = strings.Fields(access.AllowedOrigins)
 		}
-		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
+		x = ArrayOfStructsToArrayOfPointersOfStructs(accesses)
+		this.tokenCacheMu.Lock()
 		if this.tokenCache == nil {
 			this.tokenCache = make(map[string][]*Access)
 		}
 		this.tokenCache[authorization] = x
+		this.tokenCacheMu.Unlock()
 		return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 	}
 
@@ -600,7 +622,9 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 			orderbyClause := ""
 			if orderBy != nil && orderBy != "" {
-				orderbyClause = fmt.Sprintf("ORDER BY %s", orderBy)
+				orderByStr := fmt.Sprintf("%s", orderBy)
+				gosqlcrud.SqlSafe(&orderByStr)
+				orderbyClause = fmt.Sprintf("ORDER BY %s", orderByStr)
 			}
 
 			if database.Type == "sqlserver" {
@@ -762,7 +786,9 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 
 	}
 
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
 	if len(exportedResults) == 0 {
 		return nil, nil
 	}

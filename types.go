@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"sync"
 
 	"github.com/elgs/gosqlcrud"
 )
@@ -16,7 +17,8 @@ type App struct {
 	ManagedTokens *ManagedTokens       `json:"managed_tokens"`
 	CacheTokens   bool                 `json:"cache_tokens"`
 	NullValue     any                  `json:"null_value"`
-	tokenCache    map[string][]*Access
+	tokenCache  map[string][]*Access
+	tokenCacheMu sync.RWMutex
 }
 
 type Web struct {
