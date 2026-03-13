@@ -102,11 +102,11 @@ func (this *App) shutdown() {
 
 func (this *App) GetDatabase(databaseId string) (*Database, error) {
 	if database, ok := this.Databases[databaseId]; ok {
-		if database.dbType == gosqlcrud.Unknown {
-			_, err := database.GetConn()
-			if err != nil {
-				return nil, err
-			}
+		// Always call GetConn to ensure connection is initialized;
+		// GetConn is idempotent and returns early if already connected.
+		_, err := database.GetConn()
+		if err != nil {
+			return nil, err
 		}
 		return database, nil
 	}
@@ -310,7 +310,6 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		this.tokenCacheMu.Lock()
 		delete(this.tokenCache, authorization)
 		this.tokenCacheMu.Unlock()
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success":"token cleared"}`)
 		return
