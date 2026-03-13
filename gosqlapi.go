@@ -608,10 +608,10 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			case float64:
 				pageSize = int(_pageSize)
 			}
-			if pageSize == 0 {
+			if pageSize <= 0 {
 				pageSize = table.PageSize
 			}
-			if pageSize == 0 {
+			if pageSize <= 0 {
 				pageSize = 100
 			}
 
@@ -628,6 +628,9 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				offset = int(_offset)
 			case float64:
 				offset = int(_offset)
+			}
+			if offset < 0 {
+				offset = 0
 			}
 
 			limitClause := database.GetLimitClause(pageSize, offset)
@@ -686,7 +689,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 
 			if showTotal {
-				qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %s WHERE 1=1 %s`, table.Name, where)
+				qt := fmt.Sprintf(`SELECT COUNT(*) AS "total" FROM %s WHERE 1=1 %s`, table.Name, where)
 				_total, err := gosqlcrud.QueryToMaps(db, qt, values...)
 				if err != nil {
 					return nil, err
