@@ -15,7 +15,7 @@ const version = "48"
 
 func main() {
 	v := flag.Bool("v", false, "prints version")
-	confPath := flag.String("c", "gosqlapi.json", "configration file path")
+	confPath := flag.String("c", "gosqlapi.json", "configuration file path")
 	flag.Parse()
 	if *v {
 		fmt.Println(version)

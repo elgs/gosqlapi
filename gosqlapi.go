@@ -107,6 +107,8 @@ func (this *App) GetDatabase(databaseId string) (*Database, error) {
 }
 
 func (this *Database) GetConn() (*sql.DB, error) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	if this.conn != nil {
 		return this.conn, nil
 	}
@@ -169,16 +171,17 @@ func (this *Database) BuildStatements(script *Script) error {
 	return nil
 }
 
+var reSQLParam = regexp.MustCompile(`\?(.+?)\?`)
+
 func (this *Database) ExtractSQLParameters(s *string) []string {
 	params := []string{}
-	r := regexp.MustCompile(`\?(.+?)\?`)
-	m := r.FindAllStringSubmatch(*s, -1)
+	m := reSQLParam.FindAllStringSubmatch(*s, -1)
 	for _, v := range m {
 		if len(v) >= 2 {
 			params = append(params, v[1])
 		}
 	}
-	indexes := r.FindAllStringSubmatchIndex(*s, -1)
+	indexes := reSQLParam.FindAllStringSubmatchIndex(*s, -1)
 	temp := []string{}
 	lastIndex := 0
 	for index, match := range indexes {
@@ -335,16 +338,21 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	authorized, err := this.authorize(methodUpper, authorization, databaseId, objectId, origin, referer)
 	if !authorized {
-		writeJSONError(w, http.StatusUnauthorized, err.Error())
+		msg := "access denied"
+		if err != nil {
+			msg = err.Error()
+		}
+		writeJSONError(w, http.StatusUnauthorized, msg)
 		return
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
+	defer r.Body.Close()
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	defer r.Body.Close()
 	var bodyData map[string]any
 	if len(body) > 0 {
 		if err := json.Unmarshal(body, &bodyData); err != nil {
@@ -371,6 +379,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("script %s not found", objectId))
 			return
 		}
+		script.mu.Lock()
 		script.SQL = strings.TrimSpace(script.SQL)
 		script.Path = strings.TrimSpace(script.Path)
 
@@ -380,6 +389,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
+				script.mu.Unlock()
 				writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("script %s is empty", objectId))
 				return
 			}
@@ -387,6 +397,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 			if script.Path != "" {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
+					script.mu.Unlock()
 					writeJSONError(w, http.StatusInternalServerError, err.Error())
 					return
 				}
@@ -395,11 +406,13 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = database.BuildStatements(script)
 			if err != nil {
+				script.mu.Unlock()
 				writeJSONError(w, http.StatusInternalServerError, err.Error())
 				return
 			}
 			this.Scripts[objectId] = script
 		}
+		script.mu.Unlock()
 
 		result, err = runExec(database, script, params, r)
 		if err != nil {
@@ -465,11 +478,13 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 
 	// managed tokens
 	if this.ManagedTokens != nil {
-		this.tokenCacheMu.RLock()
-		x, ok := this.tokenCache[authorization]
-		this.tokenCacheMu.RUnlock()
-		if ok {
-			return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
+		if this.CacheTokens {
+			this.tokenCacheMu.RLock()
+			x, ok := this.tokenCache[authorization]
+			this.tokenCacheMu.RUnlock()
+			if ok {
+				return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
+			}
 		}
 		managedTokensDatabase, err := this.GetDatabase(this.ManagedTokens.Database)
 		if err != nil {
@@ -490,13 +505,15 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 			access.TargetObjectArray = strings.Fields(access.TargetObjects)
 			access.AllowedOriginArray = strings.Fields(access.AllowedOrigins)
 		}
-		x = ArrayOfStructsToArrayOfPointersOfStructs(accesses)
-		this.tokenCacheMu.Lock()
-		if this.tokenCache == nil {
-			this.tokenCache = make(map[string][]*Access)
+		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
+		if this.CacheTokens {
+			this.tokenCacheMu.Lock()
+			if this.tokenCache == nil {
+				this.tokenCache = make(map[string][]*Access)
+			}
+			this.tokenCache[authorization] = x
+			this.tokenCacheMu.Unlock()
 		}
-		this.tokenCache[authorization] = x
-		this.tokenCacheMu.Unlock()
 		return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 	}
 

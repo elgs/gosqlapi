@@ -81,9 +81,10 @@ func SplitSqlLabel(sqlString string) (label string, s string) {
 	return "", strings.TrimSpace(sqlString)
 }
 
+var reRequestParam = regexp.MustCompile(`\!(.+?)\!`)
+
 func ReplaceRequestParameters(s *string, r *http.Request) {
-	regex := regexp.MustCompile(`\!(.+?)\!`)
-	m := regex.FindAllStringSubmatch(*s, -1)
+	m := reRequestParam.FindAllStringSubmatch(*s, -1)
 	for _, v := range m {
 		if len(v) >= 2 {
 			replacement := GetMetaDataFromRequest(v[1], r)

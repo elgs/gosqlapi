@@ -8,6 +8,8 @@ import (
 	"github.com/elgs/gosqlcrud"
 )
 
+const maxBodySize = 10 * 1024 * 1024 // 10MB
+
 type App struct {
 	Web           *Web                 `json:"web"`
 	Databases     map[string]*Database `json:"databases"`
@@ -37,6 +39,7 @@ type Database struct {
 	Url    string `json:"url"`
 	dbType gosqlcrud.DbType
 	conn   *sql.DB
+	mu     sync.Mutex
 }
 
 type Access struct {
@@ -80,6 +83,7 @@ type Script struct {
 	PublicExec bool   `json:"public_exec"`
 	Statements []*Statement
 	built      bool
+	mu         sync.Mutex
 }
 
 type Table struct {
