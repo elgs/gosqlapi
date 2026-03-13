@@ -582,6 +582,8 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				pageSize = _pageSize
 			case int64:
 				pageSize = int(_pageSize)
+			case float64:
+				pageSize = int(_pageSize)
 			}
 			if pageSize == 0 {
 				pageSize = table.PageSize
@@ -600,6 +602,8 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			case int:
 				offset = _offset
 			case int64:
+				offset = int(_offset)
+			case float64:
 				offset = int(_offset)
 			}
 
@@ -651,6 +655,8 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			case int:
 				showTotal = _showTotal == 1
 			case int64:
+				showTotal = _showTotal == 1
+			case float64:
 				showTotal = _showTotal == 1
 			case nil:
 				showTotal = table.ShowTotal
