@@ -25,6 +25,9 @@ func NewApp(confBytes []byte) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	if app.Web == nil {
+		app.Web = &Web{}
+	}
 	err = app.buildTokenQuery()
 	if err != nil {
 		return nil, err
