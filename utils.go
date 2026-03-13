@@ -66,13 +66,14 @@ func SqlNormalize(sql *string) {
 	*sql = ret
 }
 
+var reSqlLabel = regexp.MustCompile(`(?i)^\-\-\s*@label\s*\:\s*(.+)\s*`)
+
 func SplitSqlLabel(sqlString string) (label string, s string) {
 	sqlString = strings.TrimSpace(sqlString) + "\n"
 	labelAndSql := strings.SplitN(sqlString, "\n", 2)
 	labelPart := labelAndSql[0]
 	sqlPart := labelAndSql[1]
-	r := regexp.MustCompile(`(?i)^\-\-\s*@label\s*\:\s*(.+)\s*`)
-	m := r.FindStringSubmatch(labelPart)
+	m := reSqlLabel.FindStringSubmatch(labelPart)
 	if len(m) >= 2 {
 		SqlNormalize(&sqlPart)
 		return strings.TrimSpace(m[1]), strings.TrimSpace(sqlPart)

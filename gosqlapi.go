@@ -28,6 +28,13 @@ func NewApp(confBytes []byte) (*App, error) {
 	if app.Web == nil {
 		app.Web = &Web{}
 	}
+	for _, table := range app.Tables {
+		gosqlcrud.SqlSafe(&table.Name)
+		if table.PrimaryKey == "" {
+			table.PrimaryKey = "ID"
+		}
+		gosqlcrud.SqlSafe(&table.PrimaryKey)
+	}
 	err = app.buildTokenQuery()
 	if err != nil {
 		return nil, err
@@ -303,6 +310,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		this.tokenCacheMu.Lock()
 		delete(this.tokenCache, authorization)
 		this.tokenCacheMu.Unlock()
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success":"token cleared"}`)
 		return
@@ -412,9 +420,10 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			this.Scripts[objectId] = script
 		}
+		statements := script.Statements
 		script.mu.Unlock()
 
-		result, err = runExec(database, script, params, r)
+		result, err = runExec(database, statements, params, r)
 		if err != nil {
 			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -453,7 +462,7 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 
 	// if object is not found, return false
 	// if object is found, check if it is public
-	// if object is not public, return true regardless of token
+	// if object is public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
 	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
@@ -578,12 +587,7 @@ func (this *App) hasAccess(methodUpper string, accesses []*Access, databaseId st
 }
 
 func runTable(method string, database *Database, table *Table, dataId string, params map[string]any) (any, error) {
-	gosqlcrud.SqlSafe(&table.Name)
 	gosqlcrud.SqlSafe(&dataId)
-	if table.PrimaryKey == "" {
-		table.PrimaryKey = "ID"
-	}
-	gosqlcrud.SqlSafe(&table.PrimaryKey)
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
@@ -688,6 +692,9 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				if err != nil {
 					return nil, err
 				}
+				if len(_total) == 0 {
+					return nil, fmt.Errorf("failed to get total count")
+				}
 
 				total := 0
 				switch v := _total[0]["total"].(type) {
@@ -748,7 +755,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 	return nil, fmt.Errorf("Method %s not supported.", method)
 }
 
-func runExec(database *Database, script *Script, params map[string]any, r *http.Request) (any, error) {
+func runExec(database *Database, statements []*Statement, params map[string]any, r *http.Request) (any, error) {
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
@@ -760,7 +767,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 		return nil, err
 	}
 
-	for _, statement := range script.Statements {
+	for _, statement := range statements {
 		if statement.SQL == "" {
 			continue
 		}
