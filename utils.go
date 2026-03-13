@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -147,6 +148,12 @@ func ArrayOfStructsToArrayOfPointersOfStructs[T any](a []T) []*T {
 		b[i] = &a[i]
 	}
 	return b
+}
+
+func writeJSONError(w http.ResponseWriter, statusCode int, msg string) {
+	w.WriteHeader(statusCode)
+	resp, _ := json.Marshal(map[string]string{"error": msg})
+	w.Write(resp)
 }
 
 func Contains[T comparable](s []T, e T) bool {

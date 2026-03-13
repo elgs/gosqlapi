@@ -304,8 +304,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	database, err := this.GetDatabase(databaseId)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 	objectId := r.PathValue("obj")
@@ -318,8 +317,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(origin, "http://") || strings.HasPrefix(origin, "https://") {
 		originUrl, err := url.Parse(origin)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		origin = originUrl.Hostname()
@@ -327,39 +325,34 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(referer, "http://") || strings.HasPrefix(referer, "https://") {
 		refererUrl, err := url.Parse(referer)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		referer = refererUrl.Hostname()
 	}
 	authorized, err := this.authorize(methodUpper, authorization, databaseId, objectId, origin, referer)
 	if !authorized {
-		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	defer r.Body.Close()
 	var bodyData map[string]any
 	if len(body) > 0 {
 		if err := json.Unmarshal(body, &bodyData); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, `{"error":"invalid JSON in request body"}`)
+			writeJSONError(w, http.StatusBadRequest, "invalid JSON in request body")
 			return
 		}
 	}
 
 	paramValues, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	params := valuesToMap(false, this.NullValue, paramValues)
@@ -372,8 +365,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
 		if script == nil {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"script %s not found"}`, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("script %s not found", objectId))
 			return
 		}
 		script.SQL = strings.TrimSpace(script.SQL)
@@ -385,16 +377,14 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, `{"error":"script %s is empty"}`, objectId)
+				writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("script %s is empty", objectId))
 				return
 			}
 
 			if script.Path != "" {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+					writeJSONError(w, http.StatusInternalServerError, err.Error())
 					return
 				}
 				script.SQL = string(f)
@@ -402,8 +392,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = database.BuildStatements(script)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+				writeJSONError(w, http.StatusInternalServerError, err.Error())
 				return
 			}
 			this.Scripts[objectId] = script
@@ -411,39 +400,33 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		result, err = runExec(database, script, params, r)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 	} else {
 		dataId := r.PathValue("key")
 		table := this.Tables[objectId]
 		if table == nil {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"table %s not found"}`, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("table %s not found", objectId))
 			return
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if result == nil {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"record %s not found for database %s and object %s"}`, dataId, databaseId, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("record %s not found for database %s and object %s", dataId, databaseId, objectId))
 			return
 		} else if f, ok := result.(map[string]int64); ok && f["rows_affected"] == 0 {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"record %s not found for database %s and object %s"}`, dataId, databaseId, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("record %s not found for database %s and object %s", dataId, databaseId, objectId))
 			return
 		}
 	}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	jsonString := string(jsonData)
