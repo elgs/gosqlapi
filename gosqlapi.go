@@ -83,6 +83,11 @@ func (this *App) shutdown() {
 	if this.Web.httpsServer != nil {
 		this.Web.httpsServer.Shutdown(ctx)
 	}
+	for _, database := range this.Databases {
+		if database.conn != nil {
+			database.conn.Close()
+		}
+	}
 }
 
 func (this *App) GetDatabase(databaseId string) (*Database, error) {
@@ -575,6 +580,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 	if table.PrimaryKey == "" {
 		table.PrimaryKey = "ID"
 	}
+	gosqlcrud.SqlSafe(&table.PrimaryKey)
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err

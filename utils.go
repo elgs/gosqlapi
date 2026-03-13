@@ -114,6 +114,9 @@ func ShouldExport(sql string) bool {
 
 func ExtractIPAddressFromHost(host string) string {
 	sepIndex := strings.LastIndex(host, ":")
+	if sepIndex < 0 {
+		return strings.ReplaceAll(strings.ReplaceAll(host, "[", ""), "]", "")
+	}
 	ip := host[0:sepIndex]
 	ip = strings.ReplaceAll(strings.ReplaceAll(ip, "[", ""), "]", "")
 	return ip
