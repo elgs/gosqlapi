@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/elgs/gosplitargs"
 	"github.com/elgs/gosqlcrud"
@@ -23,6 +24,16 @@ func NewApp(confBytes []byte) (*App, error) {
 	err := json.Unmarshal(confBytes, &app)
 	if err != nil {
 		return nil, err
+	}
+	if app.Web == nil {
+		app.Web = &Web{}
+	}
+	for _, table := range app.Tables {
+		gosqlcrud.SqlSafe(&table.Name)
+		if table.PrimaryKey == "" {
+			table.PrimaryKey = "ID"
+		}
+		gosqlcrud.SqlSafe(&table.PrimaryKey)
 	}
 	err = app.buildTokenQuery()
 	if err != nil {
@@ -40,12 +51,15 @@ func (this *App) run() {
 
 	if this.Web.HttpAddr != "" {
 		this.Web.httpServer = &http.Server{
-			Addr:    this.Web.HttpAddr,
-			Handler: mux,
+			Addr:         this.Web.HttpAddr,
+			Handler:      mux,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			IdleTimeout:  120 * time.Second,
 		}
 		go func() {
 			err := this.Web.httpServer.ListenAndServe()
-			if err != nil {
+			if err != nil && err != http.ErrServerClosed {
 				log.Fatalf("Failed to listen on http://%s/, %v\n", this.Web.HttpAddr, err)
 			}
 		}()
@@ -54,12 +68,15 @@ func (this *App) run() {
 
 	if this.Web.HttpsAddr != "" {
 		this.Web.httpsServer = &http.Server{
-			Addr:    this.Web.HttpsAddr,
-			Handler: mux,
+			Addr:         this.Web.HttpsAddr,
+			Handler:      mux,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			IdleTimeout:  120 * time.Second,
 		}
 		go func() {
 			err := this.Web.httpsServer.ListenAndServeTLS(this.Web.CertFile, this.Web.KeyFile)
-			if err != nil {
+			if err != nil && err != http.ErrServerClosed {
 				log.Fatalf("Failed to listen on https://%s/, %v\n", this.Web.HttpsAddr, err)
 			}
 		}()
@@ -68,21 +85,28 @@ func (this *App) run() {
 }
 
 func (this *App) shutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	if this.Web.httpServer != nil {
-		this.Web.httpServer.Shutdown(context.Background())
+		this.Web.httpServer.Shutdown(ctx)
 	}
 	if this.Web.httpsServer != nil {
-		this.Web.httpsServer.Shutdown(context.Background())
+		this.Web.httpsServer.Shutdown(ctx)
+	}
+	for _, database := range this.Databases {
+		if database.conn != nil {
+			database.conn.Close()
+		}
 	}
 }
 
 func (this *App) GetDatabase(databaseId string) (*Database, error) {
 	if database, ok := this.Databases[databaseId]; ok {
-		if database.dbType == gosqlcrud.Unknown {
-			_, err := database.GetConn()
-			if err != nil {
-				return nil, err
-			}
+		// Always call GetConn to ensure connection is initialized;
+		// GetConn is idempotent and returns early if already connected.
+		_, err := database.GetConn()
+		if err != nil {
+			return nil, err
 		}
 		return database, nil
 	}
@@ -90,6 +114,8 @@ func (this *App) GetDatabase(databaseId string) (*Database, error) {
 }
 
 func (this *Database) GetConn() (*sql.DB, error) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	if this.conn != nil {
 		return this.conn, nil
 	}
@@ -152,16 +178,17 @@ func (this *Database) BuildStatements(script *Script) error {
 	return nil
 }
 
+var reSQLParam = regexp.MustCompile(`\?(.+?)\?`)
+
 func (this *Database) ExtractSQLParameters(s *string) []string {
 	params := []string{}
-	r := regexp.MustCompile(`\?(.+?)\?`)
-	m := r.FindAllStringSubmatch(*s, -1)
+	m := reSQLParam.FindAllStringSubmatch(*s, -1)
 	for _, v := range m {
 		if len(v) >= 2 {
 			params = append(params, v[1])
 		}
 	}
-	indexes := r.FindAllStringSubmatchIndex(*s, -1)
+	indexes := reSQLParam.FindAllStringSubmatchIndex(*s, -1)
 	temp := []string{}
 	lastIndex := 0
 	for index, match := range indexes {
@@ -214,7 +241,7 @@ func (this *App) buildTokenQuery() error {
 			this.ManagedTokens.AllowedOrigins = "ALLOWED_ORIGINS"
 		}
 
-		this.ManagedTokens.Query = fmt.Sprintf(`SELECT 
+		this.ManagedTokens.Query = fmt.Sprintf(`SELECT
 			%s AS "target_database",
 			%s AS "target_objects",
 			%s AS "read_private",
@@ -227,8 +254,8 @@ func (this *App) buildTokenQuery() error {
 			this.ManagedTokens.ReadPrivate,
 			this.ManagedTokens.WritePrivate,
 			this.ManagedTokens.ExecPrivate,
-			this.ManagedTokens.TableName,
 			this.ManagedTokens.AllowedOrigins,
+			this.ManagedTokens.TableName,
 			this.ManagedTokens.Token)
 	}
 	tokenDb, err := this.GetDatabase(this.ManagedTokens.Database)
@@ -280,7 +307,9 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	databaseId := r.PathValue("db")
 
 	if this.CacheTokens && databaseId == ".clear-tokens" && authorization != "" {
+		this.tokenCacheMu.Lock()
 		delete(this.tokenCache, authorization)
+		this.tokenCacheMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"success":"token cleared"}`)
 		return
@@ -288,8 +317,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	database, err := this.GetDatabase(databaseId)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 	objectId := r.PathValue("obj")
@@ -302,8 +330,7 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(origin, "http://") || strings.HasPrefix(origin, "https://") {
 		originUrl, err := url.Parse(origin)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		origin = originUrl.Hostname()
@@ -311,33 +338,39 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(referer, "http://") || strings.HasPrefix(referer, "https://") {
 		refererUrl, err := url.Parse(referer)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		referer = refererUrl.Hostname()
 	}
 	authorized, err := this.authorize(methodUpper, authorization, databaseId, objectId, origin, referer)
 	if !authorized {
-		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		msg := "access denied"
+		if err != nil {
+			msg = err.Error()
+		}
+		writeJSONError(w, http.StatusUnauthorized, msg)
 		return
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
+	defer r.Body.Close()
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	defer r.Body.Close()
 	var bodyData map[string]any
-	json.Unmarshal(body, &bodyData)
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &bodyData); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid JSON in request body")
+			return
+		}
+	}
 
 	paramValues, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	params := valuesToMap(false, this.NullValue, paramValues)
@@ -350,10 +383,10 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
 		if script == nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"script %s not found"}`, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("script %s not found", objectId))
 			return
 		}
+		script.mu.Lock()
 		script.SQL = strings.TrimSpace(script.SQL)
 		script.Path = strings.TrimSpace(script.Path)
 
@@ -363,16 +396,16 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 		if !script.built {
 			if script.SQL == "" && script.Path == "" {
-				w.WriteHeader(http.StatusForbidden)
-				fmt.Fprintf(w, `{"error":"script %s is empty"}`, objectId)
+				script.mu.Unlock()
+				writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("script %s is empty", objectId))
 				return
 			}
 
 			if script.Path != "" {
 				f, err := os.ReadFile(script.Path)
 				if err != nil {
-					w.WriteHeader(http.StatusForbidden)
-					fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+					script.mu.Unlock()
+					writeJSONError(w, http.StatusInternalServerError, err.Error())
 					return
 				}
 				script.SQL = string(f)
@@ -380,48 +413,44 @@ func (this *App) defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = database.BuildStatements(script)
 			if err != nil {
-				w.WriteHeader(http.StatusForbidden)
-				fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+				script.mu.Unlock()
+				writeJSONError(w, http.StatusInternalServerError, err.Error())
 				return
 			}
 			this.Scripts[objectId] = script
 		}
+		statements := script.Statements
+		script.mu.Unlock()
 
-		result, err = runExec(database, script, params, r)
+		result, err = runExec(database, statements, params, r)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 	} else {
 		dataId := r.PathValue("key")
 		table := this.Tables[objectId]
 		if table == nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"table %s not found"}`, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("table %s not found", objectId))
 			return
 		}
 		result, err = runTable(methodUpper, database, table, dataId, params)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if result == nil {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"record %s not found for database %s and object %s"}`, dataId, databaseId, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("record %s not found for database %s and object %s", dataId, databaseId, objectId))
 			return
 		} else if f, ok := result.(map[string]int64); ok && f["rows_affected"] == 0 {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error":"record %s not found for database %s and object %s"}`, dataId, databaseId, objectId)
+			writeJSONError(w, http.StatusNotFound, fmt.Sprintf("record %s not found for database %s and object %s", dataId, databaseId, objectId))
 			return
 		}
 	}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"%s"}`, err.Error())
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	jsonString := string(jsonData)
@@ -432,7 +461,7 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 
 	// if object is not found, return false
 	// if object is found, check if it is public
-	// if object is not public, return true regardless of token
+	// if object is public, return true regardless of token
 	// if database is not specified in object, the object is shared across all databases
 	if methodUpper == http.MethodPatch || (methodUpper == http.MethodGet && this.Tables[objectId] == nil) {
 		script := this.Scripts[objectId]
@@ -457,8 +486,13 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 
 	// managed tokens
 	if this.ManagedTokens != nil {
-		if x, ok := this.tokenCache[authorization]; ok {
-			return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
+		if this.CacheTokens {
+			this.tokenCacheMu.RLock()
+			x, ok := this.tokenCache[authorization]
+			this.tokenCacheMu.RUnlock()
+			if ok {
+				return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
+			}
 		}
 		managedTokensDatabase, err := this.GetDatabase(this.ManagedTokens.Database)
 		if err != nil {
@@ -480,10 +514,14 @@ func (this *App) authorize(methodUpper string, authorization string, databaseId 
 			access.AllowedOriginArray = strings.Fields(access.AllowedOrigins)
 		}
 		x := ArrayOfStructsToArrayOfPointersOfStructs(accesses)
-		if this.tokenCache == nil {
-			this.tokenCache = make(map[string][]*Access)
+		if this.CacheTokens {
+			this.tokenCacheMu.Lock()
+			if this.tokenCache == nil {
+				this.tokenCache = make(map[string][]*Access)
+			}
+			this.tokenCache[authorization] = x
+			this.tokenCacheMu.Unlock()
 		}
-		this.tokenCache[authorization] = x
 		return this.hasAccess(methodUpper, x, databaseId, objectId, origin, referer)
 	}
 
@@ -548,11 +586,7 @@ func (this *App) hasAccess(methodUpper string, accesses []*Access, databaseId st
 }
 
 func runTable(method string, database *Database, table *Table, dataId string, params map[string]any) (any, error) {
-	gosqlcrud.SqlSafe(&table.Name)
 	gosqlcrud.SqlSafe(&dataId)
-	if table.PrimaryKey == "" {
-		table.PrimaryKey = "ID"
-	}
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
@@ -571,11 +605,13 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				pageSize = _pageSize
 			case int64:
 				pageSize = int(_pageSize)
+			case float64:
+				pageSize = int(_pageSize)
 			}
-			if pageSize == 0 {
+			if pageSize <= 0 {
 				pageSize = table.PageSize
 			}
-			if pageSize == 0 {
+			if pageSize <= 0 {
 				pageSize = 100
 			}
 
@@ -590,6 +626,11 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				offset = _offset
 			case int64:
 				offset = int(_offset)
+			case float64:
+				offset = int(_offset)
+			}
+			if offset < 0 {
+				offset = 0
 			}
 
 			limitClause := database.GetLimitClause(pageSize, offset)
@@ -600,7 +641,9 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 			orderbyClause := ""
 			if orderBy != nil && orderBy != "" {
-				orderbyClause = fmt.Sprintf("ORDER BY %s", orderBy)
+				orderByStr := fmt.Sprintf("%s", orderBy)
+				gosqlcrud.SqlSafe(&orderByStr)
+				orderbyClause = fmt.Sprintf("ORDER BY %s", orderByStr)
 			}
 
 			if database.Type == "sqlserver" {
@@ -639,15 +682,20 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				showTotal = _showTotal == 1
 			case int64:
 				showTotal = _showTotal == 1
+			case float64:
+				showTotal = _showTotal == 1
 			case nil:
 				showTotal = table.ShowTotal
 			}
 
 			if showTotal {
-				qt := fmt.Sprintf(`SELECT COUNT(*) AS TOTAL FROM %s WHERE 1=1 %s`, table.Name, where)
+				qt := fmt.Sprintf(`SELECT COUNT(*) AS "total" FROM %s WHERE 1=1 %s`, table.Name, where)
 				_total, err := gosqlcrud.QueryToMaps(db, qt, values...)
 				if err != nil {
 					return nil, err
+				}
+				if len(_total) == 0 {
+					return nil, fmt.Errorf("failed to get total count")
 				}
 
 				total := 0
@@ -709,7 +757,7 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 	return nil, fmt.Errorf("Method %s not supported.", method)
 }
 
-func runExec(database *Database, script *Script, params map[string]any, r *http.Request) (any, error) {
+func runExec(database *Database, statements []*Statement, params map[string]any, r *http.Request) (any, error) {
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
@@ -721,7 +769,7 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 		return nil, err
 	}
 
-	for _, statement := range script.Statements {
+	for _, statement := range statements {
 		if statement.SQL == "" {
 			continue
 		}
@@ -762,7 +810,9 @@ func runExec(database *Database, script *Script, params map[string]any, r *http.
 
 	}
 
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
 	if len(exportedResults) == 0 {
 		return nil, nil
 	}
