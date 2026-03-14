@@ -3,9 +3,12 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"sync"
 
 	"github.com/elgs/gosqlcrud"
 )
+
+const maxBodySize = 10 * 1024 * 1024 // 10MB
 
 type App struct {
 	Web           *Web                 `json:"web"`
@@ -16,7 +19,8 @@ type App struct {
 	ManagedTokens *ManagedTokens       `json:"managed_tokens"`
 	CacheTokens   bool                 `json:"cache_tokens"`
 	NullValue     any                  `json:"null_value"`
-	tokenCache    map[string][]*Access
+	tokenCache  map[string][]*Access
+	tokenCacheMu sync.RWMutex
 }
 
 type Web struct {
@@ -35,6 +39,7 @@ type Database struct {
 	Url    string `json:"url"`
 	dbType gosqlcrud.DbType
 	conn   *sql.DB
+	mu     sync.Mutex
 }
 
 type Access struct {
@@ -78,6 +83,7 @@ type Script struct {
 	PublicExec bool   `json:"public_exec"`
 	Statements []*Statement
 	built      bool
+	mu         sync.Mutex
 }
 
 type Table struct {
