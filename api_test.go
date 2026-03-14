@@ -64,6 +64,9 @@ func (this *APITestSuite) SetupSuite() {
 }
 
 func (this *APITestSuite) TearDownSuite() {
+	if this.app != nil {
+		this.app.shutdown()
+	}
 }
 
 func (this *APITestSuite) TestAPI() {
