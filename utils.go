@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -65,13 +66,14 @@ func SqlNormalize(sql *string) {
 	*sql = ret
 }
 
+var reSqlLabel = regexp.MustCompile(`(?i)^\-\-\s*@label\s*\:\s*(.+)\s*`)
+
 func SplitSqlLabel(sqlString string) (label string, s string) {
 	sqlString = strings.TrimSpace(sqlString) + "\n"
 	labelAndSql := strings.SplitN(sqlString, "\n", 2)
 	labelPart := labelAndSql[0]
 	sqlPart := labelAndSql[1]
-	r := regexp.MustCompile(`(?i)^\-\-\s*@label\s*\:\s*(.+)\s*`)
-	m := r.FindStringSubmatch(labelPart)
+	m := reSqlLabel.FindStringSubmatch(labelPart)
 	if len(m) >= 2 {
 		SqlNormalize(&sqlPart)
 		return strings.TrimSpace(m[1]), strings.TrimSpace(sqlPart)
@@ -80,9 +82,10 @@ func SplitSqlLabel(sqlString string) (label string, s string) {
 	return "", strings.TrimSpace(sqlString)
 }
 
+var reRequestParam = regexp.MustCompile(`\!(.+?)\!`)
+
 func ReplaceRequestParameters(s *string, r *http.Request) {
-	regex := regexp.MustCompile(`\!(.+?)\!`)
-	m := regex.FindAllStringSubmatch(*s, -1)
+	m := reRequestParam.FindAllStringSubmatch(*s, -1)
 	for _, v := range m {
 		if len(v) >= 2 {
 			replacement := GetMetaDataFromRequest(v[1], r)
@@ -114,6 +117,9 @@ func ShouldExport(sql string) bool {
 
 func ExtractIPAddressFromHost(host string) string {
 	sepIndex := strings.LastIndex(host, ":")
+	if sepIndex < 0 {
+		return strings.ReplaceAll(strings.ReplaceAll(host, "[", ""), "]", "")
+	}
 	ip := host[0:sepIndex]
 	ip = strings.ReplaceAll(strings.ReplaceAll(ip, "[", ""), "]", "")
 	return ip
@@ -144,6 +150,12 @@ func ArrayOfStructsToArrayOfPointersOfStructs[T any](a []T) []*T {
 		b[i] = &a[i]
 	}
 	return b
+}
+
+func writeJSONError(w http.ResponseWriter, statusCode int, msg string) {
+	w.WriteHeader(statusCode)
+	resp, _ := json.Marshal(map[string]string{"error": msg})
+	w.Write(resp)
 }
 
 func Contains[T comparable](s []T, e T) bool {
