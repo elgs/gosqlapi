@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -153,6 +154,9 @@ func ArrayOfStructsToArrayOfPointersOfStructs[T any](a []T) []*T {
 }
 
 func writeJSONError(w http.ResponseWriter, statusCode int, msg string) {
+	if statusCode >= 500 {
+		log.Printf("ERROR %d: %s\n", statusCode, msg)
+	}
 	w.WriteHeader(statusCode)
 	resp, _ := json.Marshal(map[string]string{"error": msg})
 	w.Write(resp)
