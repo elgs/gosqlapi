@@ -7,11 +7,11 @@ require (
 	github.com/elgs/gosqlcrud v0.0.0-20260313074803-222d25e4d91c
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/jackc/pgx/v5 v5.9.1
-	github.com/lib/pq v1.12.1
+	github.com/lib/pq v1.12.3
 	github.com/microsoft/go-mssqldb v1.9.8
 	github.com/sijms/go-ora/v2 v2.9.0
 	github.com/stretchr/testify v1.11.1
-	modernc.org/sqlite v1.48.0
+	modernc.org/sqlite v1.48.1
 )
 
 require (
