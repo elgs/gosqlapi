@@ -1,11 +1,11 @@
 module github.com/elgs/gosqlapi
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
-	github.com/elgs/gosqlcrud v0.0.0-20260313074803-222d25e4d91c
-	github.com/mattn/go-sqlite3 v1.14.40
+	github.com/elgs/gosqlcrud v0.0.0-20260407050208-fc5aee4745aa
+	github.com/mattn/go-sqlite3 v1.14.42
 	github.com/stretchr/testify v1.11.1
 )
 
