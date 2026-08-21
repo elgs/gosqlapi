@@ -83,17 +83,26 @@ func SplitSqlLabel(sqlString string) (label string, s string) {
 	return "", strings.TrimSpace(sqlString)
 }
 
-var reRequestParam = regexp.MustCompile(`\!(.+?)\!`)
-
-func ReplaceRequestParameters(s *string, r *http.Request) {
-	m := reRequestParam.FindAllStringSubmatch(*s, -1)
-	for _, v := range m {
-		if len(v) >= 2 {
-			replacement := GetMetaDataFromRequest(v[1], r)
-			gosqlcrud.SqlSafe(&replacement)
-			*s = strings.ReplaceAll(*s, v[0], fmt.Sprintf("'%s'", replacement))
+// buildOrderBy accepts only "column [asc|desc]" terms, comma separated. The
+// order_by value can come from the request, so anything else is rejected
+// instead of being interpolated into the SQL.
+func buildOrderBy(orderBy string) (string, error) {
+	parts := strings.Split(orderBy, ",")
+	for i, part := range parts {
+		fields := strings.Fields(strings.TrimSpace(part))
+		if len(fields) == 0 || len(fields) > 2 || !gosqlcrud.ValidIdentifier(fields[0]) {
+			return "", fmt.Errorf("bad order_by %q", orderBy)
 		}
+		if len(fields) == 2 {
+			direction := strings.ToUpper(fields[1])
+			if direction != "ASC" && direction != "DESC" {
+				return "", fmt.Errorf("bad order_by %q", orderBy)
+			}
+			fields[1] = direction
+		}
+		parts[i] = strings.Join(fields, " ")
 	}
+	return "ORDER BY " + strings.Join(parts, ", "), nil
 }
 
 func IsQuery(sql string) bool {

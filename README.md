@@ -586,7 +586,9 @@ SELECT
 ```
 
 The request metadata parameters are case-insensitive. The request metadata
-parameters are surrounded by `!` characters.
+parameters are surrounded by `!` characters. Each `!name!` is bound to the
+query as an SQL parameter, exactly like `?name?`, so the value is never
+spliced into the SQL text.
 
 ## Database Configuration
 
