@@ -29,11 +29,20 @@ func NewApp(confBytes []byte) (*App, error) {
 		app.Web = &Web{}
 	}
 	for _, table := range app.Tables {
-		gosqlcrud.SqlSafe(&table.Name)
+		if !gosqlcrud.ValidIdentifier(table.Name) {
+			return nil, fmt.Errorf("bad table name %q", table.Name)
+		}
 		if table.PrimaryKey == "" {
 			table.PrimaryKey = "ID"
 		}
-		gosqlcrud.SqlSafe(&table.PrimaryKey)
+		if !gosqlcrud.ValidIdentifier(table.PrimaryKey) {
+			return nil, fmt.Errorf("bad primary key %q on table %s", table.PrimaryKey, table.Name)
+		}
+		for _, column := range table.ExportedColumns {
+			if !gosqlcrud.ValidIdentifier(column) {
+				return nil, fmt.Errorf("bad exported column %q on table %s", column, table.Name)
+			}
+		}
 	}
 	err = app.buildTokenQuery()
 	if err != nil {
@@ -178,20 +187,23 @@ func (this *Database) BuildStatements(script *Script) error {
 	return nil
 }
 
-var reSQLParam = regexp.MustCompile(`\?(.+?)\?`)
+var reSQLParam = regexp.MustCompile(`\?(.+?)\?|!(.+?)!`)
 
+// ExtractSQLParameters rewrites both ?name? body parameters and !name!
+// request metadata parameters into dialect placeholders, in text order, so
+// every value is bound instead of spliced into the SQL. Metadata names are
+// returned with a "!" prefix; runExec resolves them from the request.
 func (this *Database) ExtractSQLParameters(s *string) []string {
 	params := []string{}
-	m := reSQLParam.FindAllStringSubmatch(*s, -1)
-	for _, v := range m {
-		if len(v) >= 2 {
-			params = append(params, v[1])
-		}
-	}
 	indexes := reSQLParam.FindAllStringSubmatchIndex(*s, -1)
 	temp := []string{}
 	lastIndex := 0
 	for index, match := range indexes {
+		if match[2] >= 0 {
+			params = append(params, (*s)[match[2]:match[3]])
+		} else {
+			params = append(params, "!"+(*s)[match[4]:match[5]])
+		}
 		temp = append(temp, (*s)[lastIndex:match[0]])
 		temp = append(temp, gosqlcrud.GetPlaceHolder(index, this.dbType))
 		lastIndex = match[1]
@@ -241,6 +253,20 @@ func (this *App) buildTokenQuery() error {
 			this.ManagedTokens.AllowedOrigins = "ALLOWED_ORIGINS"
 		}
 
+		for _, name := range []string{
+			this.ManagedTokens.TargetDatabase,
+			this.ManagedTokens.TargetObjects,
+			this.ManagedTokens.ReadPrivate,
+			this.ManagedTokens.WritePrivate,
+			this.ManagedTokens.ExecPrivate,
+			this.ManagedTokens.AllowedOrigins,
+			this.ManagedTokens.TableName,
+			this.ManagedTokens.Token,
+		} {
+			if !gosqlcrud.ValidIdentifier(name) {
+				return fmt.Errorf("bad managed_tokens identifier %q", name)
+			}
+		}
 		this.ManagedTokens.Query = fmt.Sprintf(`SELECT
 			%s AS "target_database",
 			%s AS "target_objects",
@@ -272,7 +298,6 @@ func (this *App) buildTokenQuery() error {
 		return fmt.Errorf("no query found")
 	}
 	this.ManagedTokens.Query = qs[0]
-	gosqlcrud.SqlSafe(&this.ManagedTokens.Query)
 	return nil
 }
 
@@ -586,7 +611,7 @@ func (this *App) hasAccess(methodUpper string, accesses []*Access, databaseId st
 }
 
 func runTable(method string, database *Database, table *Table, dataId string, params map[string]any) (any, error) {
-	gosqlcrud.SqlSafe(&dataId)
+	// dataId is only ever bound as a placeholder value; never rewrite it
 	db, err := database.GetConn()
 	if err != nil {
 		return nil, err
@@ -641,9 +666,11 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 			}
 			orderbyClause := ""
 			if orderBy != nil && orderBy != "" {
-				orderByStr := fmt.Sprintf("%s", orderBy)
-				gosqlcrud.SqlSafe(&orderByStr)
-				orderbyClause = fmt.Sprintf("ORDER BY %s", orderByStr)
+				// order_by can come from the request; parse it, never sanitize it
+				orderbyClause, err = buildOrderBy(fmt.Sprintf("%s", orderBy))
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			if database.Type == "sqlserver" {
@@ -652,9 +679,6 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 				}
 			}
 
-			gosqlcrud.SqlSafe(&limitClause)
-			gosqlcrud.SqlSafe(&orderbyClause)
-
 			where, values, err := gosqlcrud.MapForSqlWhere(params, 0, database.dbType)
 			if err != nil {
 				return nil, err
@@ -662,9 +686,9 @@ func runTable(method string, database *Database, table *Table, dataId string, pa
 
 			columns := "*"
 			if len(table.ExportedColumns) > 0 {
+				// each column name was validated when the config was loaded
 				columns = strings.Join(table.ExportedColumns, ", ")
 			}
-			gosqlcrud.SqlSafe(&columns)
 
 			q := fmt.Sprintf(`SELECT %s FROM %s WHERE 1=1 %s %s %s`, columns, table.Name, where, orderbyClause, limitClause)
 			data, err := gosqlcrud.QueryToMaps(db, q, values...)
@@ -773,14 +797,13 @@ func runExec(database *Database, statements []*Statement, params map[string]any,
 		if statement.SQL == "" {
 			continue
 		}
-		statementSQL := statement.SQL
-
-		ReplaceRequestParameters(&statementSQL, r)
-
 		var result any
 		sqlParams := []any{}
 		for _, param := range statement.Params {
-			if val, ok := params[param]; ok {
+			if strings.HasPrefix(param, "!") {
+				// a !name! marker: bound from the request, not the body
+				sqlParams = append(sqlParams, GetMetaDataFromRequest(param[1:], r))
+			} else if val, ok := params[param]; ok {
 				sqlParams = append(sqlParams, val)
 			} else {
 				tx.Rollback()
@@ -789,7 +812,7 @@ func runExec(database *Database, statements []*Statement, params map[string]any,
 		}
 
 		if statement.Query {
-			result, err = gosqlcrud.QueryToMaps(tx, statementSQL, sqlParams...)
+			result, err = gosqlcrud.QueryToMaps(tx, statement.SQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err
@@ -798,7 +821,7 @@ func runExec(database *Database, statements []*Statement, params map[string]any,
 				exportedResults[statement.Label] = result
 			}
 		} else {
-			result, err = gosqlcrud.Exec(tx, statementSQL, sqlParams...)
+			result, err = gosqlcrud.Exec(tx, statement.SQL, sqlParams...)
 			if err != nil {
 				tx.Rollback()
 				return nil, err
