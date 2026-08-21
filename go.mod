@@ -1,15 +1,15 @@
 module github.com/elgs/gosqlapi
 
-go 1.26.6
+go 1.27.0
 
 require (
 	github.com/elgs/gosplitargs v0.0.0-20241205072753-cbd889c0f906
-	github.com/elgs/gosqlcrud v0.0.0-20260610100311-3e195e930ba7
+	github.com/elgs/gosqlcrud v0.0.0-20260821080701-e73fa7a1b835
 	github.com/go-sql-driver/mysql v1.10.0
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 )
